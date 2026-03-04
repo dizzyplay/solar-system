@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    noteapp_lib::run()
+    solar_system_lib::run()
 }
