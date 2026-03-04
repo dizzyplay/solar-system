@@ -22,6 +22,7 @@ type SceneTextures = {
   mercuryTexture: THREE.Texture;
   venusTexture: THREE.Texture;
   venusCloudTexture: THREE.Texture;
+  marsTexture: THREE.Texture;
   sunTexture: THREE.Texture;
   sunHaloTexture: THREE.Texture;
 };
@@ -41,6 +42,7 @@ function configureTextures(
   sceneTextures.mercuryTexture.colorSpace = THREE.SRGBColorSpace;
   sceneTextures.venusTexture.colorSpace = THREE.SRGBColorSpace;
   sceneTextures.venusCloudTexture.colorSpace = THREE.SRGBColorSpace;
+  sceneTextures.marsTexture.colorSpace = THREE.SRGBColorSpace;
 
   sceneTextures.earthDay.wrapS = THREE.RepeatWrapping;
   sceneTextures.earthNormal.wrapS = THREE.RepeatWrapping;
@@ -49,6 +51,7 @@ function configureTextures(
   sceneTextures.mercuryTexture.wrapS = THREE.RepeatWrapping;
   sceneTextures.venusTexture.wrapS = THREE.RepeatWrapping;
   sceneTextures.venusCloudTexture.wrapS = THREE.RepeatWrapping;
+  sceneTextures.marsTexture.wrapS = THREE.RepeatWrapping;
 
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
   const textures = [
@@ -59,6 +62,7 @@ function configureTextures(
     sceneTextures.mercuryTexture,
     sceneTextures.venusTexture,
     sceneTextures.venusCloudTexture,
+    sceneTextures.marsTexture,
     sceneTextures.sunTexture,
     sceneTextures.sunHaloTexture,
   ];
@@ -78,8 +82,34 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
     const handleAfterUpdate = () => {
       setHmrVersion((version) => version + 1);
     };
+    const handleBeforeUpdate = (payload: unknown) => {
+      const updates =
+        typeof payload === "object" &&
+        payload !== null &&
+        "updates" in payload &&
+        Array.isArray((payload as { updates?: unknown[] }).updates)
+          ? ((payload as { updates: Array<{ path?: string }> }).updates ?? [])
+          : [];
+
+      const shouldForceReload = updates.some((update) => {
+        if (typeof update.path !== "string") {
+          return false;
+        }
+        return (
+          update.path.includes("/src/scene/") ||
+          update.path.includes("/public/textures/")
+        );
+      });
+
+      // Three scene modules are not pure React state, so force a clean reload on scene updates.
+      if (shouldForceReload) {
+        window.location.reload();
+      }
+    };
+    import.meta.hot.on("vite:beforeUpdate", handleBeforeUpdate);
     import.meta.hot.on("vite:afterUpdate", handleAfterUpdate);
     return () => {
+      import.meta.hot?.off("vite:beforeUpdate", handleBeforeUpdate);
       import.meta.hot?.off("vite:afterUpdate", handleAfterUpdate);
     };
   }, []);
@@ -150,6 +180,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         mercuryTexture,
         venusTexture,
         venusCloudTexture,
+        marsTexture,
       ] = await Promise.all([
         textureLoader.loadAsync(TEXTURES.earthDay),
         textureLoader.loadAsync(TEXTURES.earthNormal),
@@ -158,6 +189,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         textureLoader.loadAsync(TEXTURES.mercury),
         textureLoader.loadAsync(TEXTURES.venus),
         textureLoader.loadAsync(TEXTURES.venusClouds),
+        textureLoader.loadAsync(TEXTURES.mars),
       ]);
       const sceneTextures: SceneTextures = {
         earthDay,
@@ -167,6 +199,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         mercuryTexture,
         venusTexture,
         venusCloudTexture,
+        marsTexture,
         sunTexture: createSunTexture(),
         sunHaloTexture: createSunHaloTexture(),
       };
@@ -195,6 +228,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
           mercury: sceneTextures.mercuryTexture,
           venus: sceneTextures.venusTexture,
           venusClouds: sceneTextures.venusCloudTexture,
+          mars: sceneTextures.marsTexture,
         }),
       );
       const earthEntity = planetSystem.entities.get("earth");
