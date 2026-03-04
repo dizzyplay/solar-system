@@ -1,10 +1,26 @@
 import * as THREE from "three";
 import {
+  CALLISTO_ORBIT_INCLINATION,
+  CALLISTO_ORBIT_RADIUS,
+  CALLISTO_ORBIT_SPEED,
+  CALLISTO_RADIUS_RATIO,
   EARTH_AXIAL_TILT,
   EARTH_ORBIT_LOCAL_OFFSET,
   EARTH_ORBIT_SPEED,
   EARTH_RADIUS,
   EARTH_ROTATION_SPEED,
+  EUROPA_ORBIT_INCLINATION,
+  EUROPA_ORBIT_RADIUS,
+  EUROPA_ORBIT_SPEED,
+  EUROPA_RADIUS_RATIO,
+  GANYMEDE_ORBIT_INCLINATION,
+  GANYMEDE_ORBIT_RADIUS,
+  GANYMEDE_ORBIT_SPEED,
+  GANYMEDE_RADIUS_RATIO,
+  IO_ORBIT_INCLINATION,
+  IO_ORBIT_RADIUS,
+  IO_ORBIT_SPEED,
+  IO_RADIUS_RATIO,
   JUPITER_AXIAL_TILT,
   JUPITER_ORBIT_INCLINATION,
   JUPITER_ORBIT_LOCAL_OFFSET,
@@ -207,6 +223,94 @@ export function getJupiterPlanetConfig(texture: THREE.Texture): PlanetConfig {
   };
 }
 
+export function getIoPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(IO_ORBIT_RADIUS, 0, 0),
+      inclinationX: IO_ORBIT_INCLINATION,
+      speed: IO_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * IO_RADIUS_RATIO,
+      widthSegments: 72,
+      heightSegments: 72,
+      focusDistance: 0.55,
+      material: {
+        map: texture,
+        color: "#dfb668",
+        specular: "#4b3522",
+        shininess: 4,
+      },
+    },
+  };
+}
+
+export function getEuropaPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(EUROPA_ORBIT_RADIUS, 0, 0),
+      inclinationX: EUROPA_ORBIT_INCLINATION,
+      speed: EUROPA_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * EUROPA_RADIUS_RATIO,
+      widthSegments: 72,
+      heightSegments: 72,
+      focusDistance: 0.5,
+      material: {
+        map: texture,
+        color: "#c8baa0",
+        specular: "#433a32",
+        shininess: 3,
+      },
+    },
+  };
+}
+
+export function getGanymedePlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(GANYMEDE_ORBIT_RADIUS, 0, 0),
+      inclinationX: GANYMEDE_ORBIT_INCLINATION,
+      speed: GANYMEDE_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * GANYMEDE_RADIUS_RATIO,
+      widthSegments: 72,
+      heightSegments: 72,
+      focusDistance: 0.65,
+      material: {
+        map: texture,
+        color: "#9f8f79",
+        specular: "#3a3027",
+        shininess: 3,
+      },
+    },
+  };
+}
+
+export function getCallistoPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(CALLISTO_ORBIT_RADIUS, 0, 0),
+      inclinationX: CALLISTO_ORBIT_INCLINATION,
+      speed: CALLISTO_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * CALLISTO_RADIUS_RATIO,
+      widthSegments: 72,
+      heightSegments: 72,
+      focusDistance: 0.62,
+      material: {
+        map: texture,
+        color: "#7f7465",
+        specular: "#2f2923",
+        shininess: 2,
+      },
+    },
+  };
+}
+
 type SolarSystemPlanetTextures = {
   earthDay: THREE.Texture;
   earthNormal: THREE.Texture;
@@ -277,6 +381,54 @@ export function getSolarSystemPlanetDefinitions(
         gapSize: 0.24,
         opacity: 0.28,
       },
+    },
+    {
+      id: "io",
+      parentId: "jupiter",
+      config: getIoPlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xffc987,
+        dashSize: 0.1,
+        gapSize: 0.08,
+        opacity: 0.3,
+      },
+      lookAtId: "jupiter",
+    },
+    {
+      id: "europa",
+      parentId: "jupiter",
+      config: getEuropaPlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xd8d0be,
+        dashSize: 0.11,
+        gapSize: 0.085,
+        opacity: 0.28,
+      },
+      lookAtId: "jupiter",
+    },
+    {
+      id: "ganymede",
+      parentId: "jupiter",
+      config: getGanymedePlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xc2ad8a,
+        dashSize: 0.12,
+        gapSize: 0.09,
+        opacity: 0.26,
+      },
+      lookAtId: "jupiter",
+    },
+    {
+      id: "callisto",
+      parentId: "jupiter",
+      config: getCallistoPlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0x92816d,
+        dashSize: 0.13,
+        gapSize: 0.095,
+        opacity: 0.25,
+      },
+      lookAtId: "jupiter",
     },
     {
       id: "moon",
