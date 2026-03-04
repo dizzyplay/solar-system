@@ -6,7 +6,6 @@ type SolarLightingOptions = {
 };
 
 export type SolarLightingRuntime = {
-  sunLight: THREE.DirectionalLight;
   dispose: () => void;
 };
 
@@ -14,21 +13,18 @@ export function createSolarLighting(
   scene: THREE.Scene,
   options: SolarLightingOptions,
 ): SolarLightingRuntime {
-  const ambientLight = new THREE.AmbientLight(0x24374f, 0.12);
-  const hemisphereLight = new THREE.HemisphereLight(0x7ea0e0, 0x101722, 0.32);
-  const sunLight = new THREE.DirectionalLight(0xfff6de, 1.85);
-  sunLight.position.copy(options.sunPosition);
-  const bounceLight = new THREE.DirectionalLight(0x86a8cf, 0.16);
-  bounceLight.position.copy(options.sunPosition).multiplyScalar(-1);
-  const sunHaloLight = new THREE.PointLight(0xffb45a, 1.25, options.sunRadius * 34, 2);
+  const ambientLight = new THREE.AmbientLight(0x0f1828, 0.015);
+  const sunPointLight = new THREE.PointLight(0xfff6de, 4.4, 0, 0);
+  sunPointLight.position.copy(options.sunPosition);
+  const sunHaloLight = new THREE.PointLight(0xffb45a, 0.55, 0, 0);
   sunHaloLight.position.copy(options.sunPosition);
-  scene.add(ambientLight, hemisphereLight, sunLight, bounceLight, sunHaloLight);
+  scene.add(ambientLight, sunPointLight, sunHaloLight);
 
   const dispose = () => {
-    scene.remove(ambientLight, hemisphereLight, sunLight, bounceLight, sunHaloLight);
+    scene.remove(ambientLight, sunPointLight, sunHaloLight);
   };
 
-  return { sunLight, dispose };
+  return { dispose };
 }
 
 type SunVisualOptions = {

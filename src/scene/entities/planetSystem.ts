@@ -114,8 +114,7 @@ export function createPlanetSystem(
 
   const dispose = () => {
     for (const entity of entities.values()) {
-      entity.geometry.dispose();
-      entity.material.dispose();
+      entity.dispose();
     }
     for (const orbitLine of orbitLines) {
       orbitLine.geometry.dispose();

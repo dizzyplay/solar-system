@@ -48,6 +48,7 @@ export type PlanetConfig = {
   axialTiltZ?: number;
   spinSpeed?: number;
   orbit?: PlanetOrbitOptions;
+  layers?: PlanetLayerOptions[];
 };
 
 export type PlanetEntity = PlanetMeshParts & {
@@ -55,6 +56,21 @@ export type PlanetEntity = PlanetMeshParts & {
   orbitCenter?: THREE.Group;
   orbitPlane?: THREE.Group;
   update: (delta: number) => void;
+  dispose: () => void;
+};
+
+export type PlanetLayerOptions = {
+  radiusScale: number;
+  spinSpeed?: number;
+  widthSegments?: number;
+  heightSegments?: number;
+  material: PlanetMaterialOptions & {
+    transparent?: boolean;
+    opacity?: number;
+    depthWrite?: boolean;
+    blending?: THREE.Blending;
+    side?: THREE.Side;
+  };
 };
 
 export function createPlanetMesh(options: PlanetMeshOptions): PlanetMeshParts {
@@ -136,6 +152,35 @@ export function createPlanetEntity(
     parent.add(bodyGroup);
   }
 
+  const layerParts: PlanetMeshParts[] = [];
+  const layerSpeeds: number[] = [];
+  const layerSegments = {
+    width: config.mesh.widthSegments ?? 96,
+    height: config.mesh.heightSegments ?? 96,
+  };
+
+  if (config.layers) {
+    for (const layerConfig of config.layers) {
+      const layer = createPlanetMesh({
+        radius: config.mesh.radius * layerConfig.radiusScale,
+        widthSegments: layerConfig.widthSegments ?? layerSegments.width,
+        heightSegments: layerConfig.heightSegments ?? layerSegments.height,
+        material: layerConfig.material,
+      });
+      layer.material.transparent = layerConfig.material.transparent ?? true;
+      layer.material.opacity = layerConfig.material.opacity ?? 1;
+      layer.material.depthWrite = layerConfig.material.depthWrite ?? true;
+      layer.material.blending =
+        layerConfig.material.blending ?? THREE.NormalBlending;
+      if (layerConfig.material.side !== undefined) {
+        layer.material.side = layerConfig.material.side;
+      }
+      bodyGroup.add(layer.mesh);
+      layerParts.push(layer);
+      layerSpeeds.push(layerConfig.spinSpeed ?? 0);
+    }
+  }
+
   const spinSpeed = config.spinSpeed ?? 0;
   const orbitSpeed = config.orbit?.speed ?? 0;
   const update = (delta: number) => {
@@ -144,6 +189,21 @@ export function createPlanetEntity(
     }
     if (orbitCenter && orbitSpeed !== 0) {
       orbitCenter.rotation.y += delta * orbitSpeed;
+    }
+    for (let i = 0; i < layerParts.length; i += 1) {
+      const layerSpeed = layerSpeeds[i];
+      if (layerSpeed !== 0) {
+        layerParts[i].mesh.rotation.y += delta * layerSpeed;
+      }
+    }
+  };
+
+  const dispose = () => {
+    geometry.dispose();
+    material.dispose();
+    for (const layer of layerParts) {
+      layer.geometry.dispose();
+      layer.material.dispose();
     }
   };
 
@@ -155,5 +215,6 @@ export function createPlanetEntity(
     orbitCenter,
     orbitPlane,
     update,
+    dispose,
   };
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { SUN_DISTANCE, SUN_POSITION, SUN_RADIUS, TEXTURES } from "./constants";
@@ -8,14 +8,6 @@ import { getSolarSystemPlanetDefinitions } from "./entities/solarSystemPlanets";
 import { createSolarLighting, createSunVisual } from "./entities/sun";
 import { createFocusController } from "./interaction/focusController";
 import { createSunHaloTexture, createSunTexture } from "./sunTextures";
-
-const SCENE_HMR_VERSION = import.meta.hot?.data.sceneVersion ?? 0;
-if (import.meta.hot) {
-  import.meta.hot.accept();
-  import.meta.hot.dispose((data) => {
-    data.sceneVersion = SCENE_HMR_VERSION + 1;
-  });
-}
 
 type UseSolarSceneOptions = {
   hostRef: RefObject<HTMLDivElement | null>;
@@ -27,6 +19,9 @@ type SceneTextures = {
   earthNormal: THREE.Texture;
   earthSpecular: THREE.Texture;
   moonTexture: THREE.Texture;
+  mercuryTexture: THREE.Texture;
+  venusTexture: THREE.Texture;
+  venusCloudTexture: THREE.Texture;
   sunTexture: THREE.Texture;
   sunHaloTexture: THREE.Texture;
 };
@@ -43,11 +38,17 @@ function configureTextures(
 ) {
   sceneTextures.earthDay.colorSpace = THREE.SRGBColorSpace;
   sceneTextures.moonTexture.colorSpace = THREE.SRGBColorSpace;
+  sceneTextures.mercuryTexture.colorSpace = THREE.SRGBColorSpace;
+  sceneTextures.venusTexture.colorSpace = THREE.SRGBColorSpace;
+  sceneTextures.venusCloudTexture.colorSpace = THREE.SRGBColorSpace;
 
   sceneTextures.earthDay.wrapS = THREE.RepeatWrapping;
   sceneTextures.earthNormal.wrapS = THREE.RepeatWrapping;
   sceneTextures.earthSpecular.wrapS = THREE.RepeatWrapping;
   sceneTextures.moonTexture.wrapS = THREE.RepeatWrapping;
+  sceneTextures.mercuryTexture.wrapS = THREE.RepeatWrapping;
+  sceneTextures.venusTexture.wrapS = THREE.RepeatWrapping;
+  sceneTextures.venusCloudTexture.wrapS = THREE.RepeatWrapping;
 
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
   const textures = [
@@ -55,6 +56,9 @@ function configureTextures(
     sceneTextures.earthNormal,
     sceneTextures.earthSpecular,
     sceneTextures.moonTexture,
+    sceneTextures.mercuryTexture,
+    sceneTextures.venusTexture,
+    sceneTextures.venusCloudTexture,
     sceneTextures.sunTexture,
     sceneTextures.sunHaloTexture,
   ];
@@ -65,6 +69,20 @@ function configureTextures(
 
 export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
   const timeScaleRef = useRef(timeScale);
+  const [hmrVersion, setHmrVersion] = useState(0);
+
+  useEffect(() => {
+    if (!import.meta.hot) {
+      return;
+    }
+    const handleAfterUpdate = () => {
+      setHmrVersion((version) => version + 1);
+    };
+    import.meta.hot.on("vite:afterUpdate", handleAfterUpdate);
+    return () => {
+      import.meta.hot?.off("vite:afterUpdate", handleAfterUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     timeScaleRef.current = timeScale;
@@ -113,7 +131,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         MIDDLE: THREE.MOUSE.DOLLY,
         RIGHT: THREE.MOUSE.ROTATE,
       };
-      controls.minDistance = 1.2;
+      controls.minDistance = 0.35;
       controls.maxDistance = Math.max(120, SUN_DISTANCE * 3.2);
       controls.target.set(0, 0, 0);
       controls.update();
@@ -124,17 +142,31 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
       });
 
       const textureLoader = new THREE.TextureLoader();
-      const [earthDay, earthNormal, earthSpecular, moonTexture] = await Promise.all([
+      const [
+        earthDay,
+        earthNormal,
+        earthSpecular,
+        moonTexture,
+        mercuryTexture,
+        venusTexture,
+        venusCloudTexture,
+      ] = await Promise.all([
         textureLoader.loadAsync(TEXTURES.earthDay),
         textureLoader.loadAsync(TEXTURES.earthNormal),
         textureLoader.loadAsync(TEXTURES.earthSpecular),
         textureLoader.loadAsync(TEXTURES.moon),
+        textureLoader.loadAsync(TEXTURES.mercury),
+        textureLoader.loadAsync(TEXTURES.venus),
+        textureLoader.loadAsync(TEXTURES.venusClouds),
       ]);
       const sceneTextures: SceneTextures = {
         earthDay,
         earthNormal,
         earthSpecular,
         moonTexture,
+        mercuryTexture,
+        venusTexture,
+        venusCloudTexture,
         sunTexture: createSunTexture(),
         sunHaloTexture: createSunHaloTexture(),
       };
@@ -160,16 +192,15 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
           earthNormal: sceneTextures.earthNormal,
           earthSpecular: sceneTextures.earthSpecular,
           moon: sceneTextures.moonTexture,
+          mercury: sceneTextures.mercuryTexture,
+          venus: sceneTextures.venusTexture,
+          venusClouds: sceneTextures.venusCloudTexture,
         }),
       );
       const earthEntity = planetSystem.entities.get("earth");
       if (!earthEntity) {
         throw new Error("Earth entity was not created");
       }
-
-      const sunTarget = new THREE.Object3D();
-      earthEntity.bodyGroup.add(sunTarget);
-      lighting.sunLight.target = sunTarget;
 
       const sunVisual = createSunVisual(scene, {
         sunPosition: SUN_POSITION,
@@ -243,7 +274,6 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         focusController.dispose();
         planetSystem.dispose();
         starField.dispose();
-        earthEntity.bodyGroup.remove(sunTarget);
         sunVisual.dispose();
         lighting.dispose();
         disposeTextures(allTextures);
@@ -270,5 +300,5 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         teardown();
       }
     };
-  }, [hostRef, SCENE_HMR_VERSION]);
+  }, [hostRef, hmrVersion]);
 }
