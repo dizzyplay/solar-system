@@ -23,6 +23,7 @@ type SceneTextures = {
   venusTexture: THREE.Texture;
   venusCloudTexture: THREE.Texture;
   marsTexture: THREE.Texture;
+  jupiterTexture: THREE.Texture;
   sunTexture: THREE.Texture;
   sunHaloTexture: THREE.Texture;
 };
@@ -43,6 +44,7 @@ function configureTextures(
   sceneTextures.venusTexture.colorSpace = THREE.SRGBColorSpace;
   sceneTextures.venusCloudTexture.colorSpace = THREE.SRGBColorSpace;
   sceneTextures.marsTexture.colorSpace = THREE.SRGBColorSpace;
+  sceneTextures.jupiterTexture.colorSpace = THREE.SRGBColorSpace;
 
   sceneTextures.earthDay.wrapS = THREE.RepeatWrapping;
   sceneTextures.earthNormal.wrapS = THREE.RepeatWrapping;
@@ -52,6 +54,7 @@ function configureTextures(
   sceneTextures.venusTexture.wrapS = THREE.RepeatWrapping;
   sceneTextures.venusCloudTexture.wrapS = THREE.RepeatWrapping;
   sceneTextures.marsTexture.wrapS = THREE.RepeatWrapping;
+  sceneTextures.jupiterTexture.wrapS = THREE.RepeatWrapping;
 
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
   const textures = [
@@ -63,6 +66,7 @@ function configureTextures(
     sceneTextures.venusTexture,
     sceneTextures.venusCloudTexture,
     sceneTextures.marsTexture,
+    sceneTextures.jupiterTexture,
     sceneTextures.sunTexture,
     sceneTextures.sunHaloTexture,
   ];
@@ -88,17 +92,22 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         payload !== null &&
         "updates" in payload &&
         Array.isArray((payload as { updates?: unknown[] }).updates)
-          ? ((payload as { updates: Array<{ path?: string }> }).updates ?? [])
+          ? ((payload as {
+              updates: Array<{ path?: string; acceptedPath?: string }>;
+            }).updates ?? [])
           : [];
 
       const shouldForceReload = updates.some((update) => {
-        if (typeof update.path !== "string") {
-          return false;
-        }
-        return (
-          update.path.includes("/src/scene/") ||
-          update.path.includes("/public/textures/")
+        const candidates = [update.path, update.acceptedPath].filter(
+          (value): value is string => typeof value === "string",
         );
+        return candidates.some((value) => {
+          const normalized = value.startsWith("/") ? value.slice(1) : value;
+          return (
+            normalized.includes("src/scene/") ||
+            normalized.includes("public/textures/")
+          );
+        });
       });
 
       // Three scene modules are not pure React state, so force a clean reload on scene updates.
@@ -181,6 +190,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         venusTexture,
         venusCloudTexture,
         marsTexture,
+        jupiterTexture,
       ] = await Promise.all([
         textureLoader.loadAsync(TEXTURES.earthDay),
         textureLoader.loadAsync(TEXTURES.earthNormal),
@@ -190,6 +200,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         textureLoader.loadAsync(TEXTURES.venus),
         textureLoader.loadAsync(TEXTURES.venusClouds),
         textureLoader.loadAsync(TEXTURES.mars),
+        textureLoader.loadAsync(TEXTURES.jupiter),
       ]);
       const sceneTextures: SceneTextures = {
         earthDay,
@@ -200,6 +211,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         venusTexture,
         venusCloudTexture,
         marsTexture,
+        jupiterTexture,
         sunTexture: createSunTexture(),
         sunHaloTexture: createSunHaloTexture(),
       };
@@ -229,6 +241,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
           venus: sceneTextures.venusTexture,
           venusClouds: sceneTextures.venusCloudTexture,
           mars: sceneTextures.marsTexture,
+          jupiter: sceneTextures.jupiterTexture,
         }),
       );
       const earthEntity = planetSystem.entities.get("earth");

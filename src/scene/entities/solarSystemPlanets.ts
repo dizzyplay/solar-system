@@ -5,6 +5,12 @@ import {
   EARTH_ORBIT_SPEED,
   EARTH_RADIUS,
   EARTH_ROTATION_SPEED,
+  JUPITER_AXIAL_TILT,
+  JUPITER_ORBIT_INCLINATION,
+  JUPITER_ORBIT_LOCAL_OFFSET,
+  JUPITER_ORBIT_SPEED,
+  JUPITER_RADIUS_RATIO,
+  JUPITER_ROTATION_SPEED,
   MARS_AXIAL_TILT,
   MARS_ORBIT_INCLINATION,
   MARS_ORBIT_LOCAL_OFFSET,
@@ -177,6 +183,30 @@ export function getMarsPlanetConfig(texture: THREE.Texture): PlanetConfig {
   };
 }
 
+export function getJupiterPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    axialTiltZ: JUPITER_AXIAL_TILT,
+    spinSpeed: JUPITER_ROTATION_SPEED,
+    orbit: {
+      centerPosition: SUN_POSITION,
+      initialOffset: JUPITER_ORBIT_LOCAL_OFFSET,
+      inclinationX: JUPITER_ORBIT_INCLINATION,
+      speed: JUPITER_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * JUPITER_RADIUS_RATIO,
+      widthSegments: 160,
+      heightSegments: 160,
+      focusDistance: 3.0,
+      material: {
+        map: texture,
+        specular: "#4a3425",
+        shininess: 8,
+      },
+    },
+  };
+}
+
 type SolarSystemPlanetTextures = {
   earthDay: THREE.Texture;
   earthNormal: THREE.Texture;
@@ -186,6 +216,7 @@ type SolarSystemPlanetTextures = {
   venus: THREE.Texture;
   venusClouds: THREE.Texture;
   mars: THREE.Texture;
+  jupiter: THREE.Texture;
 };
 
 export function getSolarSystemPlanetDefinitions(
@@ -234,6 +265,16 @@ export function getSolarSystemPlanetDefinitions(
         color: 0xd07851,
         dashSize: 0.34,
         gapSize: 0.2,
+        opacity: 0.28,
+      },
+    },
+    {
+      id: "jupiter",
+      config: getJupiterPlanetConfig(textures.jupiter),
+      orbitLine: {
+        color: 0xe0c6a0,
+        dashSize: 0.42,
+        gapSize: 0.24,
         opacity: 0.28,
       },
     },
