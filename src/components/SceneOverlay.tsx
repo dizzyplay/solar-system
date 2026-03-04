@@ -13,7 +13,7 @@ export function SceneOverlay({
 }: SceneOverlayProps) {
   return (
     <div className="overlay">
-      <h1>3D 지구</h1>
+      <h1>3D solar system</h1>
       <p className="subtitle">태양광 기반 주야 변화 + 달 공전</p>
       <p className="control-note">
         좌클릭: 천체 포커스+자동줌, 좌클릭 드래그: 이동, 우클릭 드래그: 회전, 휠: 줌
