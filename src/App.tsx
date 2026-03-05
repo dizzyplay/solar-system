@@ -6,6 +6,7 @@ import { SolarSceneCanvas } from "./scene/SolarSceneCanvas";
 
 function App() {
   const [timeScale, setTimeScale] = useState(1);
+  const [solarIrradiance, setSolarIrradiance] = useState(12);
   const [focusedTargetId, setFocusedTargetId] = useState<FocusTargetId>("earth");
   const [sceneVersion, setSceneVersion] = useState(0);
 
@@ -65,6 +66,7 @@ function App() {
         <SolarSceneCanvas
           key={sceneVersion}
           timeScale={timeScale}
+          solarIrradiance={solarIrradiance}
           focusedTargetId={focusedTargetId}
           onFocusedTargetIdChange={handleFocusedTargetIdChange}
         />
@@ -72,6 +74,8 @@ function App() {
       <SceneOverlay
         timeScale={timeScale}
         onTimeScaleChange={setTimeScale}
+        solarIrradiance={solarIrradiance}
+        onSolarIrradianceChange={setSolarIrradiance}
         focusedTargetId={focusedTargetId}
         onFocusedTargetIdChange={handleFocusedTargetIdChange}
       />

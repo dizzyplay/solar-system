@@ -37,15 +37,45 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
   const focusWorldPosition = new THREE.Vector3();
   const focusViewDirection = new THREE.Vector3();
   const desiredCameraPosition = new THREE.Vector3();
+  const worldScale = new THREE.Vector3();
+
+  const getBodyWorldRadius = (body: THREE.Object3D) => {
+    if (!(body instanceof THREE.Mesh)) {
+      return 0;
+    }
+    const geometry = body.geometry;
+    if (!geometry.boundingSphere) {
+      geometry.computeBoundingSphere();
+    }
+    const radius = geometry.boundingSphere?.radius;
+    if (typeof radius !== "number" || !Number.isFinite(radius) || radius <= 0) {
+      return 0;
+    }
+    body.getWorldScale(worldScale);
+    const maxScale = Math.max(worldScale.x, worldScale.y, worldScale.z);
+    return radius * maxScale;
+  };
+
+  const getFovFitDistance = (radius: number) => {
+    if (radius <= 0) {
+      return 0;
+    }
+    const verticalHalfFov = THREE.MathUtils.degToRad(camera.fov) * 0.5;
+    const horizontalHalfFov = Math.atan(Math.tan(verticalHalfFov) * camera.aspect);
+    const limitingHalfFov = Math.max(0.01, Math.min(verticalHalfFov, horizontalHalfFov));
+    const baseDistance = radius / Math.sin(limitingHalfFov);
+    return baseDistance * 1.12;
+  };
 
   const getBodyFocusDistance = (body: THREE.Object3D) => {
     const rawValue = body.userData.focusDistance;
     const fallback = controls.getDistance();
-    if (typeof rawValue !== "number" || Number.isNaN(rawValue)) {
-      return fallback;
-    }
+    const configuredDistance =
+      typeof rawValue === "number" && Number.isFinite(rawValue) ? rawValue : fallback;
+    const bodyRadius = getBodyWorldRadius(body);
+    const fitDistance = getFovFitDistance(bodyRadius);
     return THREE.MathUtils.clamp(
-      rawValue,
+      Math.max(configuredDistance, fitDistance),
       controls.minDistance + 0.1,
       controls.maxDistance - 0.5,
     );

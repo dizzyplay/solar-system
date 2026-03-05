@@ -11,6 +11,8 @@ const TIME_PRESETS = [0, 0.5, 1, 5, 10];
 type SceneOverlayProps = {
   timeScale: number;
   onTimeScaleChange: (nextValue: number) => void;
+  solarIrradiance: number;
+  onSolarIrradianceChange: (nextValue: number) => void;
   focusedTargetId: FocusTargetId;
   onFocusedTargetIdChange: (nextTargetId: FocusTargetId) => void;
 };
@@ -18,6 +20,8 @@ type SceneOverlayProps = {
 export function SceneOverlay({
   timeScale,
   onTimeScaleChange,
+  solarIrradiance,
+  onSolarIrradianceChange,
   focusedTargetId,
   onFocusedTargetIdChange,
 }: SceneOverlayProps) {
@@ -67,6 +71,23 @@ export function SceneOverlay({
               x{preset}
             </button>
           ))}
+        </div>
+        <div className="solar-controls">
+          <label htmlFor="solar-irradiance" className="time-label">
+            태양광 강도 {solarIrradiance.toFixed(1)}
+          </label>
+          <input
+            id="solar-irradiance"
+            className="time-slider"
+            type="range"
+            min="2"
+            max="24"
+            step="0.1"
+            value={solarIrradiance}
+            onChange={(event) => {
+              onSolarIrradianceChange(Number(event.currentTarget.value));
+            }}
+          />
         </div>
         <div className="focus-controls">
           <label htmlFor="focus-target-major" className="focus-label">

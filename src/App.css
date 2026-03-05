@@ -135,6 +135,10 @@ h1 {
   flex-wrap: wrap;
 }
 
+.solar-controls {
+  margin-top: 0.55rem;
+}
+
 .focus-controls {
   margin-top: 0.6rem;
 }

@@ -2,10 +2,12 @@ import * as THREE from "three";
 
 type SolarLightingOptions = {
   sunPosition: THREE.Vector3;
-  sunRadius: number;
+  referenceDistance: number;
+  referenceIrradiance?: number;
 };
 
 export type SolarLightingRuntime = {
+  setReferenceIrradiance: (nextValue: number) => void;
   dispose: () => void;
 };
 
@@ -13,18 +15,23 @@ export function createSolarLighting(
   scene: THREE.Scene,
   options: SolarLightingOptions,
 ): SolarLightingRuntime {
-  const ambientLight = new THREE.AmbientLight(0x0f1828, 0.015);
-  const sunPointLight = new THREE.PointLight(0xfff6de, 4.4, 0, 0);
+  const referenceDistanceSquared = options.referenceDistance * options.referenceDistance;
+  const ambientLight = new THREE.AmbientLight(0x0b111a, 0.0045);
+  const sunPointLight = new THREE.PointLight(0xfff6de, 1, 0, 2);
   sunPointLight.position.copy(options.sunPosition);
-  const sunHaloLight = new THREE.PointLight(0xffb45a, 0.55, 0, 0);
-  sunHaloLight.position.copy(options.sunPosition);
-  scene.add(ambientLight, sunPointLight, sunHaloLight);
+  scene.add(ambientLight, sunPointLight);
+
+  const setReferenceIrradiance = (nextValue: number) => {
+    const clampedValue = Math.max(0, nextValue);
+    sunPointLight.intensity = clampedValue * referenceDistanceSquared;
+  };
+  setReferenceIrradiance(options.referenceIrradiance ?? 12);
 
   const dispose = () => {
-    scene.remove(ambientLight, sunPointLight, sunHaloLight);
+    scene.remove(ambientLight, sunPointLight);
   };
 
-  return { dispose };
+  return { setReferenceIrradiance, dispose };
 }
 
 type SunVisualOptions = {

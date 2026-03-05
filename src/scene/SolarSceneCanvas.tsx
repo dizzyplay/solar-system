@@ -3,7 +3,13 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { SUN_DISTANCE, SUN_POSITION, SUN_RADIUS, TEXTURES } from "./constants";
+import {
+  EARTH_ORBIT_LOCAL_OFFSET,
+  SUN_DISTANCE,
+  SUN_POSITION,
+  SUN_RADIUS,
+  TEXTURES,
+} from "./constants";
 import { createStarField } from "./effects/starField";
 import { createPlanetSystem } from "./entities/planetSystem";
 import { getSolarSystemPlanetDefinitions } from "./entities/solarSystemPlanets";
@@ -14,6 +20,7 @@ import { createSunHaloTexture, createSunTexture } from "./sunTextures";
 
 type SolarSceneCanvasProps = {
   timeScale: number;
+  solarIrradiance: number;
   focusedTargetId: FocusTargetId;
   onFocusedTargetIdChange: (nextTargetId: FocusTargetId) => void;
 };
@@ -163,12 +170,15 @@ function configureTextures(
 
 function SolarSceneContent({
   timeScale,
+  solarIrradiance,
   focusedTargetId,
   onFocusedTargetIdChange,
 }: SolarSceneCanvasProps) {
   const { camera, gl, scene } = useThree();
   const runtimeRef = useRef<SceneRuntime | null>(null);
+  const lightingRef = useRef<ReturnType<typeof createSolarLighting> | null>(null);
   const timeScaleRef = useRef(timeScale);
+  const solarIrradianceRef = useRef(solarIrradiance);
   const focusedTargetIdRef = useRef<FocusTargetId>(focusedTargetId);
   const focusTargetByIdRef = useRef(new Map<FocusTargetId, THREE.Object3D>());
   const focusIdByTargetRef = useRef(new Map<THREE.Object3D, FocusTargetId>());
@@ -182,6 +192,11 @@ function SolarSceneContent({
   useEffect(() => {
     timeScaleRef.current = timeScale;
   }, [timeScale]);
+
+  useEffect(() => {
+    solarIrradianceRef.current = solarIrradiance;
+    lightingRef.current?.setReferenceIrradiance(solarIrradiance);
+  }, [solarIrradiance]);
 
   useEffect(() => {
     focusedTargetIdRef.current = focusedTargetId;
@@ -219,10 +234,13 @@ function SolarSceneContent({
 
     let disposed = false;
     let teardown: (() => void) | undefined;
+    const earthSunReferenceDistance = EARTH_ORBIT_LOCAL_OFFSET.length();
     const lighting = createSolarLighting(scene, {
       sunPosition: SUN_POSITION,
-      sunRadius: SUN_RADIUS,
+      referenceDistance: earthSunReferenceDistance,
+      referenceIrradiance: solarIrradianceRef.current,
     });
+    lightingRef.current = lighting;
 
     const initialize = async () => {
       const textureLoader = new THREE.TextureLoader();
@@ -430,6 +448,7 @@ function SolarSceneContent({
       if (teardown) {
         teardown();
       }
+      lightingRef.current = null;
       lighting.dispose();
     };
   }, [camera, controls, gl, onFocusedTargetIdChange, scene]);
@@ -465,6 +484,7 @@ function SolarSceneContent({
 
 export function SolarSceneCanvas({
   timeScale,
+  solarIrradiance,
   focusedTargetId,
   onFocusedTargetIdChange,
 }: SolarSceneCanvasProps) {
@@ -474,6 +494,7 @@ export function SolarSceneCanvas({
       gl={{ antialias: true, alpha: true }}
       dpr={[1, 2]}
       onCreated={({ gl }) => {
+        (gl as THREE.WebGLRenderer & { useLegacyLights?: boolean }).useLegacyLights = false;
         gl.outputColorSpace = THREE.SRGBColorSpace;
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.22;
@@ -481,6 +502,7 @@ export function SolarSceneCanvas({
     >
       <SolarSceneContent
         timeScale={timeScale}
+        solarIrradiance={solarIrradiance}
         focusedTargetId={focusedTargetId}
         onFocusedTargetIdChange={onFocusedTargetIdChange}
       />
