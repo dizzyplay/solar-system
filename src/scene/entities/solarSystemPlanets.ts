@@ -51,6 +51,30 @@ import {
   SATURN_ORBIT_SPEED,
   SATURN_RADIUS_RATIO,
   SATURN_ROTATION_SPEED,
+  MIMAS_ORBIT_INCLINATION,
+  MIMAS_ORBIT_RADIUS,
+  MIMAS_ORBIT_SPEED,
+  MIMAS_RADIUS_RATIO,
+  ENCELADUS_ORBIT_INCLINATION,
+  ENCELADUS_ORBIT_RADIUS,
+  ENCELADUS_ORBIT_SPEED,
+  ENCELADUS_RADIUS_RATIO,
+  TETHYS_ORBIT_INCLINATION,
+  TETHYS_ORBIT_RADIUS,
+  TETHYS_ORBIT_SPEED,
+  TETHYS_RADIUS_RATIO,
+  DIONE_ORBIT_INCLINATION,
+  DIONE_ORBIT_RADIUS,
+  DIONE_ORBIT_SPEED,
+  DIONE_RADIUS_RATIO,
+  RHEA_ORBIT_INCLINATION,
+  RHEA_ORBIT_RADIUS,
+  RHEA_ORBIT_SPEED,
+  RHEA_RADIUS_RATIO,
+  IAPETUS_ORBIT_INCLINATION,
+  IAPETUS_ORBIT_RADIUS,
+  IAPETUS_ORBIT_SPEED,
+  IAPETUS_RADIUS_RATIO,
   URANUS_AXIAL_TILT,
   URANUS_ORBIT_INCLINATION,
   URANUS_ORBIT_LOCAL_OFFSET,
@@ -464,6 +488,138 @@ export function getTitanPlanetConfig(texture: THREE.Texture): PlanetConfig {
   };
 }
 
+export function getRheaPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(RHEA_ORBIT_RADIUS, 0, 0),
+      inclinationX: RHEA_ORBIT_INCLINATION,
+      speed: RHEA_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * RHEA_RADIUS_RATIO,
+      widthSegments: 72,
+      heightSegments: 72,
+      focusDistance: 0.52,
+      material: {
+        map: texture,
+        color: "#b9b0a1",
+        specular: "#48433b",
+        shininess: 2,
+      },
+    },
+  };
+}
+
+export function getIapetusPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(IAPETUS_ORBIT_RADIUS, 0, 0),
+      inclinationX: IAPETUS_ORBIT_INCLINATION,
+      speed: IAPETUS_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * IAPETUS_RADIUS_RATIO,
+      widthSegments: 72,
+      heightSegments: 72,
+      focusDistance: 0.52,
+      material: {
+        map: texture,
+        color: "#968573",
+        specular: "#40352d",
+        shininess: 2,
+      },
+    },
+  };
+}
+
+export function getDionePlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(DIONE_ORBIT_RADIUS, 0, 0),
+      inclinationX: DIONE_ORBIT_INCLINATION,
+      speed: DIONE_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * DIONE_RADIUS_RATIO,
+      widthSegments: 68,
+      heightSegments: 68,
+      focusDistance: 0.48,
+      material: {
+        map: texture,
+        color: "#c5b9a7",
+        specular: "#4d463d",
+        shininess: 2,
+      },
+    },
+  };
+}
+
+export function getTethysPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(TETHYS_ORBIT_RADIUS, 0, 0),
+      inclinationX: TETHYS_ORBIT_INCLINATION,
+      speed: TETHYS_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * TETHYS_RADIUS_RATIO,
+      widthSegments: 68,
+      heightSegments: 68,
+      focusDistance: 0.47,
+      material: {
+        map: texture,
+        color: "#ccc2b2",
+        specular: "#4f493f",
+        shininess: 2,
+      },
+    },
+  };
+}
+
+export function getEnceladusPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(ENCELADUS_ORBIT_RADIUS, 0, 0),
+      inclinationX: ENCELADUS_ORBIT_INCLINATION,
+      speed: ENCELADUS_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * ENCELADUS_RADIUS_RATIO,
+      widthSegments: 56,
+      heightSegments: 56,
+      focusDistance: 0.45,
+      material: {
+        map: texture,
+        color: "#ddd6ca",
+        specular: "#5d554b",
+        shininess: 2,
+      },
+    },
+  };
+}
+
+export function getMimasPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(MIMAS_ORBIT_RADIUS, 0, 0),
+      inclinationX: MIMAS_ORBIT_INCLINATION,
+      speed: MIMAS_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * MIMAS_RADIUS_RATIO,
+      widthSegments: 56,
+      heightSegments: 56,
+      focusDistance: 0.45,
+      material: {
+        map: texture,
+        color: "#b8b0a3",
+        specular: "#4e473f",
+        shininess: 2,
+      },
+    },
+  };
+}
+
 type SolarSystemPlanetTextures = {
   earthDay: THREE.Texture;
   earthNormal: THREE.Texture;
@@ -575,6 +731,78 @@ export function getSolarSystemPlanetDefinitions(
         color: 0xe1c38f,
         dashSize: 0.14,
         gapSize: 0.1,
+        opacity: 0.3,
+      },
+      lookAtId: "saturn",
+    },
+    {
+      id: "rhea",
+      parentId: "saturn",
+      config: getRheaPlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xc5bbb0,
+        dashSize: 0.12,
+        gapSize: 0.09,
+        opacity: 0.27,
+      },
+      lookAtId: "saturn",
+    },
+    {
+      id: "iapetus",
+      parentId: "saturn",
+      config: getIapetusPlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xb39f85,
+        dashSize: 0.18,
+        gapSize: 0.14,
+        opacity: 0.22,
+      },
+      lookAtId: "saturn",
+    },
+    {
+      id: "dione",
+      parentId: "saturn",
+      config: getDionePlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xd0c5b6,
+        dashSize: 0.1,
+        gapSize: 0.08,
+        opacity: 0.3,
+      },
+      lookAtId: "saturn",
+    },
+    {
+      id: "tethys",
+      parentId: "saturn",
+      config: getTethysPlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xd7cebf,
+        dashSize: 0.1,
+        gapSize: 0.08,
+        opacity: 0.3,
+      },
+      lookAtId: "saturn",
+    },
+    {
+      id: "enceladus",
+      parentId: "saturn",
+      config: getEnceladusPlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xe0dad0,
+        dashSize: 0.09,
+        gapSize: 0.07,
+        opacity: 0.3,
+      },
+      lookAtId: "saturn",
+    },
+    {
+      id: "mimas",
+      parentId: "saturn",
+      config: getMimasPlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xbeb5a8,
+        dashSize: 0.08,
+        gapSize: 0.06,
         opacity: 0.3,
       },
       lookAtId: "saturn",
