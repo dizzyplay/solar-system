@@ -1,11 +1,19 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import { SceneOverlay } from "./components/SceneOverlay";
+import type { FocusTargetId } from "./scene/focusTargets";
 import { SolarSceneCanvas } from "./scene/SolarSceneCanvas";
 
 function App() {
   const [timeScale, setTimeScale] = useState(1);
+  const [focusedTargetId, setFocusedTargetId] = useState<FocusTargetId>("earth");
   const [sceneVersion, setSceneVersion] = useState(0);
+
+  const handleFocusedTargetIdChange = useCallback((nextTargetId: FocusTargetId) => {
+    setFocusedTargetId((prevTargetId) =>
+      prevTargetId === nextTargetId ? prevTargetId : nextTargetId,
+    );
+  }, []);
 
   useEffect(() => {
     if (!import.meta.hot) {
@@ -54,9 +62,19 @@ function App() {
         role="img"
         aria-label="Rotating 3D earth and orbiting moon rendered with three.js"
       >
-        <SolarSceneCanvas key={sceneVersion} timeScale={timeScale} />
+        <SolarSceneCanvas
+          key={sceneVersion}
+          timeScale={timeScale}
+          focusedTargetId={focusedTargetId}
+          onFocusedTargetIdChange={handleFocusedTargetIdChange}
+        />
       </div>
-      <SceneOverlay timeScale={timeScale} onTimeScaleChange={setTimeScale} />
+      <SceneOverlay
+        timeScale={timeScale}
+        onTimeScaleChange={setTimeScale}
+        focusedTargetId={focusedTargetId}
+        onFocusedTargetIdChange={handleFocusedTargetIdChange}
+      />
     </main>
   );
 }

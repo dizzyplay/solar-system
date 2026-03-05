@@ -1,15 +1,20 @@
 import { SUN_DISTANCE_COMPRESS_FACTOR } from "../scene/constants";
+import { FOCUS_TARGET_OPTIONS, type FocusTargetId } from "../scene/focusTargets";
 
 const TIME_PRESETS = [0, 0.5, 1, 5, 10];
 
 type SceneOverlayProps = {
   timeScale: number;
   onTimeScaleChange: (nextValue: number) => void;
+  focusedTargetId: FocusTargetId;
+  onFocusedTargetIdChange: (nextTargetId: FocusTargetId) => void;
 };
 
 export function SceneOverlay({
   timeScale,
   onTimeScaleChange,
+  focusedTargetId,
+  onFocusedTargetIdChange,
 }: SceneOverlayProps) {
   return (
     <div className="overlay">
@@ -49,6 +54,25 @@ export function SceneOverlay({
               x{preset}
             </button>
           ))}
+        </div>
+        <div className="focus-controls">
+          <label htmlFor="focus-target" className="focus-label">
+            포커스 대상
+          </label>
+          <select
+            id="focus-target"
+            className="focus-select"
+            value={focusedTargetId}
+            onChange={(event) => {
+              onFocusedTargetIdChange(event.currentTarget.value as FocusTargetId);
+            }}
+          >
+            {FOCUS_TARGET_OPTIONS.map((target) => (
+              <option key={target.id} value={target.id}>
+                {target.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </div>

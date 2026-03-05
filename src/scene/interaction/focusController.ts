@@ -13,10 +13,12 @@ type FocusControllerOptions = {
   canvas: HTMLCanvasElement;
   selectableBodies: THREE.Object3D[];
   initialFocusedBody?: THREE.Object3D | null;
+  onFocusChanged?: (body: THREE.Object3D | null) => void;
 };
 
 export type FocusController = {
   update: () => void;
+  setFocusedBody: (body: THREE.Object3D | null, autoZoom?: boolean) => void;
   dispose: () => void;
 };
 
@@ -53,6 +55,18 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
     desiredFocusDistance = getBodyFocusDistance(focusedBody);
   }
 
+  const setFocusedBody = (body: THREE.Object3D | null, autoZoom = true) => {
+    focusedBody = body;
+    if (!focusedBody) {
+      isAutoZooming = false;
+      options.onFocusChanged?.(null);
+      return;
+    }
+    desiredFocusDistance = getBodyFocusDistance(focusedBody);
+    isAutoZooming = autoZoom;
+    options.onFocusChanged?.(focusedBody);
+  };
+
   const resolveSelectableBody = (object: THREE.Object3D | null) => {
     let current: THREE.Object3D | null = object;
     while (current) {
@@ -88,15 +102,13 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
 
     const intersections = raycaster.intersectObjects(selectableBodies, true);
     if (intersections.length === 0) {
-      focusedBody = null;
-      isAutoZooming = false;
+      setFocusedBody(null);
       return;
     }
 
-    focusedBody = resolveSelectableBody(intersections[0].object);
-    if (focusedBody) {
-      desiredFocusDistance = getBodyFocusDistance(focusedBody);
-      isAutoZooming = true;
+    const selectedBody = resolveSelectableBody(intersections[0].object);
+    if (selectedBody) {
+      setFocusedBody(selectedBody);
     }
   };
 
@@ -148,5 +160,5 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
     canvas.removeEventListener("wheel", onWheel);
   };
 
-  return { update, dispose };
+  return { update, setFocusedBody, dispose };
 }

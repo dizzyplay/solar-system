@@ -7,6 +7,7 @@ import { SUN_DISTANCE, SUN_POSITION, SUN_RADIUS, TEXTURES } from "./constants";
 import { createStarField } from "./effects/starField";
 import { createPlanetSystem } from "./entities/planetSystem";
 import { getSolarSystemPlanetDefinitions } from "./entities/solarSystemPlanets";
+import type { FocusTargetId } from "./focusTargets";
 import { createSolarLighting, createSunVisual } from "./entities/sun";
 import { createFocusController } from "./interaction/focusController";
 import { createSaturnRingTexture, createSaturnSurfaceTexture } from "./saturnTextures";
@@ -14,6 +15,8 @@ import { createSunHaloTexture, createSunTexture } from "./sunTextures";
 
 type SolarSceneCanvasProps = {
   timeScale: number;
+  focusedTargetId: FocusTargetId;
+  onFocusedTargetIdChange: (nextTargetId: FocusTargetId) => void;
 };
 
 type SceneTextures = {
@@ -92,10 +95,17 @@ function configureTextures(
   }
 }
 
-function SolarSceneContent({ timeScale }: SolarSceneCanvasProps) {
+function SolarSceneContent({
+  timeScale,
+  focusedTargetId,
+  onFocusedTargetIdChange,
+}: SolarSceneCanvasProps) {
   const { camera, gl, scene } = useThree();
   const runtimeRef = useRef<SceneRuntime | null>(null);
   const timeScaleRef = useRef(timeScale);
+  const focusedTargetIdRef = useRef<FocusTargetId>(focusedTargetId);
+  const focusTargetByIdRef = useRef(new Map<FocusTargetId, THREE.Object3D>());
+  const focusIdByTargetRef = useRef(new Map<THREE.Object3D, FocusTargetId>());
   const animationTimeRef = useRef(0);
   const [controls, setControls] = useState<OrbitControlsImpl | null>(null);
 
@@ -106,6 +116,16 @@ function SolarSceneContent({ timeScale }: SolarSceneCanvasProps) {
   useEffect(() => {
     timeScaleRef.current = timeScale;
   }, [timeScale]);
+
+  useEffect(() => {
+    focusedTargetIdRef.current = focusedTargetId;
+    const runtime = runtimeRef.current;
+    if (!runtime) {
+      return;
+    }
+    const nextBody = focusTargetByIdRef.current.get(focusedTargetId) ?? null;
+    runtime.focusController.setFocusedBody(nextBody);
+  }, [focusedTargetId]);
 
   useEffect(() => {
     if (!(camera instanceof THREE.PerspectiveCamera) || !controls) {
@@ -224,7 +244,26 @@ function SolarSceneContent({ timeScale }: SolarSceneCanvasProps) {
         canvas: gl.domElement,
         selectableBodies: [sunVisual.mesh, ...planetSystem.selectableBodies],
         initialFocusedBody: earthEntity.mesh,
+        onFocusChanged: (body) => {
+          const nextTargetId =
+            body === null
+              ? "none"
+              : (focusIdByTargetRef.current.get(body) ?? "none");
+          onFocusedTargetIdChange(nextTargetId);
+        },
       });
+
+      const focusTargetById = new Map<FocusTargetId, THREE.Object3D>();
+      const focusIdByTarget = new Map<THREE.Object3D, FocusTargetId>();
+      focusTargetById.set("sun", sunVisual.mesh);
+      focusIdByTarget.set(sunVisual.mesh, "sun");
+      for (const [id, entity] of planetSystem.entities) {
+        const targetId = id as FocusTargetId;
+        focusTargetById.set(targetId, entity.mesh);
+        focusIdByTarget.set(entity.mesh, targetId);
+      }
+      focusTargetByIdRef.current = focusTargetById;
+      focusIdByTargetRef.current = focusIdByTarget;
 
       runtimeRef.current = {
         planetSystem,
@@ -233,8 +272,16 @@ function SolarSceneContent({ timeScale }: SolarSceneCanvasProps) {
         focusController,
       };
 
+      const initialFocusBody =
+        focusedTargetIdRef.current === "none"
+          ? null
+          : (focusTargetById.get(focusedTargetIdRef.current) ?? earthEntity.mesh);
+      focusController.setFocusedBody(initialFocusBody);
+
       teardown = () => {
         runtimeRef.current = null;
+        focusTargetByIdRef.current.clear();
+        focusIdByTargetRef.current.clear();
         animationTimeRef.current = 0;
         focusController.dispose();
         planetSystem.dispose();
@@ -259,7 +306,7 @@ function SolarSceneContent({ timeScale }: SolarSceneCanvasProps) {
       }
       lighting.dispose();
     };
-  }, [camera, controls, gl, scene]);
+  }, [camera, controls, gl, onFocusedTargetIdChange, scene]);
 
   useFrame((_, delta) => {
     const runtime = runtimeRef.current;
@@ -290,7 +337,11 @@ function SolarSceneContent({ timeScale }: SolarSceneCanvasProps) {
   );
 }
 
-export function SolarSceneCanvas({ timeScale }: SolarSceneCanvasProps) {
+export function SolarSceneCanvas({
+  timeScale,
+  focusedTargetId,
+  onFocusedTargetIdChange,
+}: SolarSceneCanvasProps) {
   return (
     <Canvas
       camera={{ fov: 45, near: 0.1, far: 600, position: [0, 0.25, 13] }}
@@ -302,7 +353,11 @@ export function SolarSceneCanvas({ timeScale }: SolarSceneCanvasProps) {
         gl.toneMappingExposure = 1.22;
       }}
     >
-      <SolarSceneContent timeScale={timeScale} />
+      <SolarSceneContent
+        timeScale={timeScale}
+        focusedTargetId={focusedTargetId}
+        onFocusedTargetIdChange={onFocusedTargetIdChange}
+      />
     </Canvas>
   );
 }
