@@ -8,6 +8,8 @@ export const FOCUS_TARGET_OPTIONS = [
   { id: "mars", label: "화성" },
   { id: "jupiter", label: "목성" },
   { id: "saturn", label: "토성" },
+  { id: "uranus", label: "천왕성" },
+  { id: "neptune", label: "해왕성" },
   { id: "titan", label: "타이탄" },
   { id: "io", label: "이오" },
   { id: "europa", label: "유로파" },

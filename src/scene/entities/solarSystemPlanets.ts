@@ -51,6 +51,18 @@ import {
   SATURN_ORBIT_SPEED,
   SATURN_RADIUS_RATIO,
   SATURN_ROTATION_SPEED,
+  URANUS_AXIAL_TILT,
+  URANUS_ORBIT_INCLINATION,
+  URANUS_ORBIT_LOCAL_OFFSET,
+  URANUS_ORBIT_SPEED,
+  URANUS_RADIUS_RATIO,
+  URANUS_ROTATION_SPEED,
+  NEPTUNE_AXIAL_TILT,
+  NEPTUNE_ORBIT_INCLINATION,
+  NEPTUNE_ORBIT_LOCAL_OFFSET,
+  NEPTUNE_ORBIT_SPEED,
+  NEPTUNE_RADIUS_RATIO,
+  NEPTUNE_ROTATION_SPEED,
   TITAN_ORBIT_INCLINATION,
   TITAN_ORBIT_RADIUS,
   TITAN_ORBIT_SPEED,
@@ -292,6 +304,56 @@ export function getSaturnPlanetConfig(
   };
 }
 
+export function getUranusPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    axialTiltZ: URANUS_AXIAL_TILT,
+    spinSpeed: URANUS_ROTATION_SPEED,
+    orbit: {
+      centerPosition: SUN_POSITION,
+      initialOffset: URANUS_ORBIT_LOCAL_OFFSET,
+      inclinationX: URANUS_ORBIT_INCLINATION,
+      speed: URANUS_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * URANUS_RADIUS_RATIO,
+      widthSegments: 128,
+      heightSegments: 128,
+      focusDistance: 2.1,
+      material: {
+        map: texture,
+        color: "#9fdce0",
+        specular: "#3f676b",
+        shininess: 6,
+      },
+    },
+  };
+}
+
+export function getNeptunePlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    axialTiltZ: NEPTUNE_AXIAL_TILT,
+    spinSpeed: NEPTUNE_ROTATION_SPEED,
+    orbit: {
+      centerPosition: SUN_POSITION,
+      initialOffset: NEPTUNE_ORBIT_LOCAL_OFFSET,
+      inclinationX: NEPTUNE_ORBIT_INCLINATION,
+      speed: NEPTUNE_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * NEPTUNE_RADIUS_RATIO,
+      widthSegments: 128,
+      heightSegments: 128,
+      focusDistance: 2.0,
+      material: {
+        map: texture,
+        color: "#5878d8",
+        specular: "#2b3f74",
+        shininess: 7,
+      },
+    },
+  };
+}
+
 export function getIoPlanetConfig(texture: THREE.Texture): PlanetConfig {
   return {
     orbit: {
@@ -483,6 +545,26 @@ export function getSolarSystemPlanetDefinitions(
         dashSize: 0.5,
         gapSize: 0.28,
         opacity: 0.24,
+      },
+    },
+    {
+      id: "uranus",
+      config: getUranusPlanetConfig(textures.jupiter),
+      orbitLine: {
+        color: 0x9fd8d8,
+        dashSize: 0.62,
+        gapSize: 0.34,
+        opacity: 0.22,
+      },
+    },
+    {
+      id: "neptune",
+      config: getNeptunePlanetConfig(textures.jupiter),
+      orbitLine: {
+        color: 0x6e8eea,
+        dashSize: 0.72,
+        gapSize: 0.38,
+        opacity: 0.2,
       },
     },
     {
