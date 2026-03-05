@@ -1,5 +1,10 @@
 import { SUN_DISTANCE_COMPRESS_FACTOR } from "../scene/constants";
-import { FOCUS_TARGET_OPTIONS, type FocusTargetId } from "../scene/focusTargets";
+import {
+  MAJOR_FOCUS_TARGET_OPTIONS,
+  getMajorFocusTargetId,
+  getMoonOptionsForMajorTarget,
+  type FocusTargetId,
+} from "../scene/focusTargets";
 
 const TIME_PRESETS = [0, 0.5, 1, 5, 10];
 
@@ -16,6 +21,12 @@ export function SceneOverlay({
   focusedTargetId,
   onFocusedTargetIdChange,
 }: SceneOverlayProps) {
+  const majorTargetId = getMajorFocusTargetId(focusedTargetId);
+  const moonOptions = getMoonOptionsForMajorTarget(majorTargetId);
+  const moonSelectValue = moonOptions.some((moon) => moon.id === focusedTargetId)
+    ? focusedTargetId
+    : majorTargetId;
+
   return (
     <div className="overlay">
       <h1>3D solar system</h1>
@@ -56,23 +67,45 @@ export function SceneOverlay({
           ))}
         </div>
         <div className="focus-controls">
-          <label htmlFor="focus-target" className="focus-label">
+          <label htmlFor="focus-target-major" className="focus-label">
             포커스 대상
           </label>
           <select
-            id="focus-target"
+            id="focus-target-major"
             className="focus-select"
-            value={focusedTargetId}
+            value={majorTargetId}
             onChange={(event) => {
               onFocusedTargetIdChange(event.currentTarget.value as FocusTargetId);
             }}
           >
-            {FOCUS_TARGET_OPTIONS.map((target) => (
+            {MAJOR_FOCUS_TARGET_OPTIONS.map((target) => (
               <option key={target.id} value={target.id}>
                 {target.label}
               </option>
             ))}
           </select>
+          {moonOptions.length > 0 ? (
+            <>
+              <label htmlFor="focus-target-moon" className="focus-label focus-sub-label">
+                위성 선택
+              </label>
+              <select
+                id="focus-target-moon"
+                className="focus-select"
+                value={moonSelectValue}
+                onChange={(event) => {
+                  onFocusedTargetIdChange(event.currentTarget.value as FocusTargetId);
+                }}
+              >
+                <option value={majorTargetId}>행성 본체</option>
+                {moonOptions.map((moon) => (
+                  <option key={moon.id} value={moon.id}>
+                    {moon.label}
+                  </option>
+                ))}
+              </select>
+            </>
+          ) : null}
         </div>
       </div>
     </div>
