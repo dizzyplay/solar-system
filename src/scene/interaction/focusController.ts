@@ -5,6 +5,8 @@ type CameraControls = {
   minDistance: number;
   maxDistance: number;
   target: THREE.Vector3;
+  addEventListener: (type: "start", listener: () => void) => void;
+  removeEventListener: (type: "start", listener: () => void) => void;
 };
 
 type FocusControllerOptions = {
@@ -12,6 +14,7 @@ type FocusControllerOptions = {
   controls: CameraControls;
   canvas: HTMLCanvasElement;
   selectableBodies: THREE.Object3D[];
+  trackingEnabled?: boolean;
   initialFocusedBody?: THREE.Object3D | null;
   onFocusChanged?: (body: THREE.Object3D | null) => void;
 };
@@ -19,6 +22,7 @@ type FocusControllerOptions = {
 export type FocusController = {
   update: () => void;
   setFocusedBody: (body: THREE.Object3D | null, autoZoom?: boolean) => void;
+  setTrackingEnabled: (enabled: boolean) => void;
   dispose: () => void;
 };
 
@@ -33,9 +37,12 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
   let focusedBody: THREE.Object3D | null = options.initialFocusedBody ?? null;
   let desiredFocusDistance = controls.getDistance();
   let isAutoZooming = focusedBody !== null;
+  let isTrackingEnabled = options.trackingEnabled ?? false;
+  const baseMinDistance = controls.minDistance;
 
   const focusWorldPosition = new THREE.Vector3();
   const focusViewDirection = new THREE.Vector3();
+  const trackedCameraOffset = new THREE.Vector3();
   const desiredCameraPosition = new THREE.Vector3();
   const worldScale = new THREE.Vector3();
 
@@ -67,6 +74,24 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
     return baseDistance * 1.12;
   };
 
+  const getBodyMinZoomDistance = (body: THREE.Object3D) => {
+    const bodyRadius = getBodyWorldRadius(body);
+    if (bodyRadius <= 0) {
+      return baseMinDistance;
+    }
+    const clippingPadding = camera.near + Math.max(0.012, bodyRadius * 0.015);
+    const minimumDistance = bodyRadius + clippingPadding;
+    return THREE.MathUtils.clamp(
+      Math.max(baseMinDistance, minimumDistance),
+      baseMinDistance,
+      controls.maxDistance - 0.5,
+    );
+  };
+
+  const syncMinDistanceWithFocus = (body: THREE.Object3D | null) => {
+    controls.minDistance = body ? getBodyMinZoomDistance(body) : baseMinDistance;
+  };
+
   const getBodyFocusDistance = (body: THREE.Object3D) => {
     const rawValue = body.userData.focusDistance;
     const fallback = controls.getDistance();
@@ -81,12 +106,21 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
     );
   };
 
+  const getClampedCurrentDistance = () =>
+    THREE.MathUtils.clamp(
+      controls.getDistance(),
+      controls.minDistance + 0.1,
+      controls.maxDistance - 0.5,
+    );
+
+  syncMinDistanceWithFocus(focusedBody);
   if (focusedBody) {
     desiredFocusDistance = getBodyFocusDistance(focusedBody);
   }
 
   const setFocusedBody = (body: THREE.Object3D | null, autoZoom = true) => {
     focusedBody = body;
+    syncMinDistanceWithFocus(focusedBody);
     if (!focusedBody) {
       isAutoZooming = false;
       options.onFocusChanged?.(null);
@@ -95,6 +129,19 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
     desiredFocusDistance = getBodyFocusDistance(focusedBody);
     isAutoZooming = autoZoom;
     options.onFocusChanged?.(focusedBody);
+  };
+
+  const setTrackingEnabled = (enabled: boolean) => {
+    isTrackingEnabled = enabled;
+    if (!focusedBody) {
+      return;
+    }
+    desiredFocusDistance = getClampedCurrentDistance();
+    if (enabled) {
+      isAutoZooming = true;
+    } else {
+      isAutoZooming = false;
+    }
   };
 
   const resolveSelectableBody = (object: THREE.Object3D | null) => {
@@ -146,41 +193,71 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
     if (!focusedBody) {
       return;
     }
-    desiredFocusDistance = THREE.MathUtils.clamp(
-      controls.getDistance(),
-      controls.minDistance + 0.1,
-      controls.maxDistance - 0.5,
-    );
+    desiredFocusDistance = getClampedCurrentDistance();
+    isAutoZooming = false;
+  };
+
+  const onControlsStart = () => {
+    if (!focusedBody) {
+      return;
+    }
+    desiredFocusDistance = getClampedCurrentDistance();
     isAutoZooming = false;
   };
 
   canvas.addEventListener("pointerdown", onPointerDown);
   canvas.addEventListener("pointerup", onPointerUp);
   canvas.addEventListener("wheel", onWheel, { passive: true });
+  controls.addEventListener("start", onControlsStart);
 
   const update = () => {
+    syncMinDistanceWithFocus(focusedBody);
     if (!focusedBody) {
       return;
     }
     focusedBody.getWorldPosition(focusWorldPosition);
-    controls.target.lerp(focusWorldPosition, 0.16);
+    trackedCameraOffset.copy(camera.position).sub(controls.target);
+    const currentDistance = trackedCameraOffset.length();
+    const minDistance = controls.minDistance + 0.1;
+    const maxDistance = controls.maxDistance - 0.5;
+    if (currentDistance > 1e-6) {
+      trackedCameraOffset.setLength(
+        THREE.MathUtils.clamp(currentDistance, minDistance, maxDistance),
+      );
+    } else {
+      trackedCameraOffset.set(
+        0,
+        0,
+        THREE.MathUtils.clamp(desiredFocusDistance, minDistance, maxDistance),
+      );
+    }
+    const shouldTrackTarget = isTrackingEnabled || isAutoZooming;
+    if (!shouldTrackTarget) {
+      controls.target.lerp(focusWorldPosition, 0.16);
+      return;
+    }
+    controls.target.copy(focusWorldPosition);
 
-    if (!isAutoZooming) {
+    if (isTrackingEnabled && !isAutoZooming) {
+      camera.position.copy(focusWorldPosition).add(trackedCameraOffset);
+      desiredFocusDistance = trackedCameraOffset.length();
       return;
     }
 
-    focusViewDirection.copy(camera.position).sub(controls.target);
+    focusViewDirection.copy(trackedCameraOffset);
     if (focusViewDirection.lengthSq() < 1e-6) {
-      focusViewDirection.set(0, 0, 1);
+      focusViewDirection.set(0, 0, desiredFocusDistance > 0 ? desiredFocusDistance : 1);
     }
     focusViewDirection.normalize();
     desiredCameraPosition
       .copy(focusWorldPosition)
       .addScaledVector(focusViewDirection, desiredFocusDistance);
     camera.position.lerp(desiredCameraPosition, 0.13);
-    const currentDistance = camera.position.distanceTo(controls.target);
-    if (Math.abs(currentDistance - desiredFocusDistance) < 0.04) {
-      isAutoZooming = false;
+    if (!isTrackingEnabled) {
+      const nextDistance = camera.position.distanceTo(controls.target);
+      if (Math.abs(nextDistance - desiredFocusDistance) < 0.04) {
+        isAutoZooming = false;
+      }
     }
   };
 
@@ -188,7 +265,8 @@ export function createFocusController(options: FocusControllerOptions): FocusCon
     canvas.removeEventListener("pointerdown", onPointerDown);
     canvas.removeEventListener("pointerup", onPointerUp);
     canvas.removeEventListener("wheel", onWheel);
+    controls.removeEventListener("start", onControlsStart);
   };
 
-  return { update, setFocusedBody, dispose };
+  return { update, setFocusedBody, setTrackingEnabled, dispose };
 }

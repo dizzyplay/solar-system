@@ -27,6 +27,7 @@ type SolarSceneCanvasProps = {
   timeScale: number;
   solarIrradiance: number;
   focusedTargetId: FocusTargetId;
+  trackingEnabled: boolean;
   onFocusedTargetIdChange: (nextTargetId: FocusTargetId) => void;
 };
 
@@ -178,6 +179,7 @@ function SolarSceneContent({
   timeScale,
   solarIrradiance,
   focusedTargetId,
+  trackingEnabled,
   onFocusedTargetIdChange,
 }: SolarSceneCanvasProps) {
   const { camera, gl, scene } = useThree();
@@ -186,6 +188,7 @@ function SolarSceneContent({
   const timeScaleRef = useRef(timeScale);
   const solarIrradianceRef = useRef(solarIrradiance);
   const focusedTargetIdRef = useRef<FocusTargetId>(focusedTargetId);
+  const trackingEnabledRef = useRef(trackingEnabled);
   const focusTargetByIdRef = useRef(new Map<FocusTargetId, THREE.Object3D>());
   const focusIdByTargetRef = useRef(new Map<THREE.Object3D, FocusTargetId>());
   const animationTimeRef = useRef(0);
@@ -213,6 +216,11 @@ function SolarSceneContent({
     const nextBody = focusTargetByIdRef.current.get(focusedTargetId) ?? null;
     runtime.focusController.setFocusedBody(nextBody);
   }, [focusedTargetId]);
+
+  useEffect(() => {
+    trackingEnabledRef.current = trackingEnabled;
+    runtimeRef.current?.focusController.setTrackingEnabled(trackingEnabled);
+  }, [trackingEnabled]);
 
   useEffect(() => {
     if (!(camera instanceof THREE.PerspectiveCamera) || !controls) {
@@ -401,6 +409,7 @@ function SolarSceneContent({
         controls,
         canvas: gl.domElement,
         selectableBodies: [sunVisual.mesh, ...planetSystem.selectableBodies],
+        trackingEnabled: trackingEnabledRef.current,
         initialFocusedBody: earthEntity.mesh,
         onFocusChanged: (body) => {
           const nextTargetId =
@@ -503,6 +512,7 @@ export function SolarSceneCanvas({
   timeScale,
   solarIrradiance,
   focusedTargetId,
+  trackingEnabled,
   onFocusedTargetIdChange,
 }: SolarSceneCanvasProps) {
   return (
@@ -521,6 +531,7 @@ export function SolarSceneCanvas({
         timeScale={timeScale}
         solarIrradiance={solarIrradiance}
         focusedTargetId={focusedTargetId}
+        trackingEnabled={trackingEnabled}
         onFocusedTargetIdChange={onFocusedTargetIdChange}
       />
     </Canvas>

@@ -164,6 +164,19 @@ h1 {
   padding: 0.36rem 0.5rem;
 }
 
+.tracking-toggle {
+  margin-top: 0.48rem;
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  font-size: 0.8rem;
+  opacity: 0.92;
+}
+
+.tracking-toggle input {
+  margin: 0;
+}
+
 .time-preset {
   border: 1px solid rgba(130, 191, 255, 0.35);
   background: rgba(9, 25, 46, 0.8);

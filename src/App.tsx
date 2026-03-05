@@ -8,6 +8,7 @@ function App() {
   const [timeScale, setTimeScale] = useState(1);
   const [solarIrradiance, setSolarIrradiance] = useState(12);
   const [focusedTargetId, setFocusedTargetId] = useState<FocusTargetId>("earth");
+  const [trackingEnabled, setTrackingEnabled] = useState(false);
   const [sceneVersion, setSceneVersion] = useState(0);
 
   const handleFocusedTargetIdChange = useCallback((nextTargetId: FocusTargetId) => {
@@ -68,6 +69,7 @@ function App() {
           timeScale={timeScale}
           solarIrradiance={solarIrradiance}
           focusedTargetId={focusedTargetId}
+          trackingEnabled={trackingEnabled}
           onFocusedTargetIdChange={handleFocusedTargetIdChange}
         />
       </div>
@@ -77,6 +79,8 @@ function App() {
         solarIrradiance={solarIrradiance}
         onSolarIrradianceChange={setSolarIrradiance}
         focusedTargetId={focusedTargetId}
+        trackingEnabled={trackingEnabled}
+        onTrackingEnabledChange={setTrackingEnabled}
         onFocusedTargetIdChange={handleFocusedTargetIdChange}
       />
     </main>

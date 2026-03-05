@@ -14,6 +14,8 @@ type SceneOverlayProps = {
   solarIrradiance: number;
   onSolarIrradianceChange: (nextValue: number) => void;
   focusedTargetId: FocusTargetId;
+  trackingEnabled: boolean;
+  onTrackingEnabledChange: (enabled: boolean) => void;
   onFocusedTargetIdChange: (nextTargetId: FocusTargetId) => void;
 };
 
@@ -23,6 +25,8 @@ export function SceneOverlay({
   solarIrradiance,
   onSolarIrradianceChange,
   focusedTargetId,
+  trackingEnabled,
+  onTrackingEnabledChange,
   onFocusedTargetIdChange,
 }: SceneOverlayProps) {
   const majorTargetId = getMajorFocusTargetId(focusedTargetId);
@@ -136,6 +140,16 @@ export function SceneOverlay({
               </select>
             </>
           ) : null}
+          <label className="tracking-toggle">
+            <input
+              type="checkbox"
+              checked={trackingEnabled}
+              onChange={(event) => {
+                onTrackingEnabledChange(event.currentTarget.checked);
+              }}
+            />
+            <span>행성 추적 유지</span>
+          </label>
         </div>
       </div>
     </div>
