@@ -1,9 +1,15 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+type CameraControls = {
+  getDistance: () => number;
+  minDistance: number;
+  maxDistance: number;
+  target: THREE.Vector3;
+};
 
 type FocusControllerOptions = {
   camera: THREE.PerspectiveCamera;
-  controls: OrbitControls;
+  controls: CameraControls;
   canvas: HTMLCanvasElement;
   selectableBodies: THREE.Object3D[];
   initialFocusedBody?: THREE.Object3D | null;

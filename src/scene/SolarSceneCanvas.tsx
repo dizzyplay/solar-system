@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { OrbitControls } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { SUN_DISTANCE, SUN_POSITION, SUN_RADIUS, TEXTURES } from "./constants";
 import { createStarField } from "./effects/starField";
 import { createPlanetSystem } from "./entities/planetSystem";
@@ -9,8 +11,7 @@ import { createSolarLighting, createSunVisual } from "./entities/sun";
 import { createFocusController } from "./interaction/focusController";
 import { createSunHaloTexture, createSunTexture } from "./sunTextures";
 
-type UseSolarSceneOptions = {
-  hostRef: RefObject<HTMLDivElement | null>;
+type SolarSceneCanvasProps = {
   timeScale: number;
 };
 
@@ -26,6 +27,13 @@ type SceneTextures = {
   jupiterTexture: THREE.Texture;
   sunTexture: THREE.Texture;
   sunHaloTexture: THREE.Texture;
+};
+
+type SceneRuntime = {
+  planetSystem: ReturnType<typeof createPlanetSystem>;
+  sunVisual: ReturnType<typeof createSunVisual>;
+  starField: ReturnType<typeof createStarField>;
+  focusController: ReturnType<typeof createFocusController>;
 };
 
 function disposeTextures(textures: THREE.Texture[]) {
@@ -70,57 +78,21 @@ function configureTextures(
     sceneTextures.sunTexture,
     sceneTextures.sunHaloTexture,
   ];
+
   for (const texture of textures) {
     texture.anisotropy = Math.min(8, maxAnisotropy);
   }
 }
 
-export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
+function SolarSceneContent({ timeScale }: SolarSceneCanvasProps) {
+  const { camera, gl, scene } = useThree();
+  const runtimeRef = useRef<SceneRuntime | null>(null);
   const timeScaleRef = useRef(timeScale);
-  const [hmrVersion, setHmrVersion] = useState(0);
+  const animationTimeRef = useRef(0);
+  const [controls, setControls] = useState<OrbitControlsImpl | null>(null);
 
-  useEffect(() => {
-    if (!import.meta.hot) {
-      return;
-    }
-    const handleAfterUpdate = () => {
-      setHmrVersion((version) => version + 1);
-    };
-    const handleBeforeUpdate = (payload: unknown) => {
-      const updates =
-        typeof payload === "object" &&
-        payload !== null &&
-        "updates" in payload &&
-        Array.isArray((payload as { updates?: unknown[] }).updates)
-          ? ((payload as {
-              updates: Array<{ path?: string; acceptedPath?: string }>;
-            }).updates ?? [])
-          : [];
-
-      const shouldForceReload = updates.some((update) => {
-        const candidates = [update.path, update.acceptedPath].filter(
-          (value): value is string => typeof value === "string",
-        );
-        return candidates.some((value) => {
-          const normalized = value.startsWith("/") ? value.slice(1) : value;
-          return (
-            normalized.includes("src/scene/") ||
-            normalized.includes("public/textures/")
-          );
-        });
-      });
-
-      // Three scene modules are not pure React state, so force a clean reload on scene updates.
-      if (shouldForceReload) {
-        window.location.reload();
-      }
-    };
-    import.meta.hot.on("vite:beforeUpdate", handleBeforeUpdate);
-    import.meta.hot.on("vite:afterUpdate", handleAfterUpdate);
-    return () => {
-      import.meta.hot?.off("vite:beforeUpdate", handleBeforeUpdate);
-      import.meta.hot?.off("vite:afterUpdate", handleAfterUpdate);
-    };
+  const onControlsReady = useCallback((next: OrbitControlsImpl | null) => {
+    setControls(next);
   }, []);
 
   useEffect(() => {
@@ -128,58 +100,37 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
   }, [timeScale]);
 
   useEffect(() => {
-    const host = hostRef.current;
-    if (!host) {
+    if (!(camera instanceof THREE.PerspectiveCamera) || !controls) {
+      return;
+    }
+
+    controls.zoomToCursor = true;
+    controls.screenSpacePanning = true;
+    controls.keyPanSpeed = 18;
+    controls.mouseButtons = {
+      LEFT: THREE.MOUSE.PAN,
+      MIDDLE: THREE.MOUSE.DOLLY,
+      RIGHT: THREE.MOUSE.ROTATE,
+    };
+    controls.minDistance = 0.35;
+    controls.maxDistance = Math.max(120, SUN_DISTANCE * 3.2);
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }, [camera, controls]);
+
+  useEffect(() => {
+    if (!(camera instanceof THREE.PerspectiveCamera) || !controls) {
       return;
     }
 
     let disposed = false;
     let teardown: (() => void) | undefined;
+    const lighting = createSolarLighting(scene, {
+      sunPosition: SUN_POSITION,
+      sunRadius: SUN_RADIUS,
+    });
 
     const initialize = async () => {
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(
-        45,
-        host.clientWidth / host.clientHeight,
-        0.1,
-        600,
-      );
-      camera.position.set(0, 0.25, 13);
-
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.22;
-      host.appendChild(renderer.domElement);
-
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enablePan = true;
-      controls.enableZoom = true;
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.06;
-      controls.rotateSpeed = 0.75;
-      controls.zoomSpeed = 1.2;
-      controls.panSpeed = 1.35;
-      controls.zoomToCursor = true;
-      controls.screenSpacePanning = true;
-      controls.keyPanSpeed = 18;
-      controls.listenToKeyEvents(window);
-      controls.mouseButtons = {
-        LEFT: THREE.MOUSE.PAN,
-        MIDDLE: THREE.MOUSE.DOLLY,
-        RIGHT: THREE.MOUSE.ROTATE,
-      };
-      controls.minDistance = 0.35;
-      controls.maxDistance = Math.max(120, SUN_DISTANCE * 3.2);
-      controls.target.set(0, 0, 0);
-      controls.update();
-
-      const lighting = createSolarLighting(scene, {
-        sunPosition: SUN_POSITION,
-        sunRadius: SUN_RADIUS,
-      });
-
       const textureLoader = new THREE.TextureLoader();
       const [
         earthDay,
@@ -202,6 +153,7 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         textureLoader.loadAsync(TEXTURES.mars),
         textureLoader.loadAsync(TEXTURES.jupiter),
       ]);
+
       const sceneTextures: SceneTextures = {
         earthDay,
         earthNormal,
@@ -215,20 +167,14 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         sunTexture: createSunTexture(),
         sunHaloTexture: createSunHaloTexture(),
       };
-      const allTextures = Object.values(sceneTextures);
 
+      const allTextures = Object.values(sceneTextures);
       if (disposed) {
         disposeTextures(allTextures);
-        lighting.dispose();
-        controls.dispose();
-        renderer.dispose();
-        if (host.contains(renderer.domElement)) {
-          host.removeChild(renderer.domElement);
-        }
         return;
       }
 
-      configureTextures(renderer, sceneTextures);
+      configureTextures(gl, sceneTextures);
 
       const planetSystem = createPlanetSystem(
         scene,
@@ -244,8 +190,11 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
           jupiter: sceneTextures.jupiterTexture,
         }),
       );
+
       const earthEntity = planetSystem.entities.get("earth");
       if (!earthEntity) {
+        disposeTextures(allTextures);
+        planetSystem.dispose();
         throw new Error("Earth entity was not created");
       }
 
@@ -255,84 +204,34 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
         sunTexture: sceneTextures.sunTexture,
         haloTexture: sceneTextures.sunHaloTexture,
       });
+
       const starField = createStarField(scene);
       const focusController = createFocusController({
         camera,
         controls,
-        canvas: renderer.domElement,
+        canvas: gl.domElement,
         selectableBodies: [sunVisual.mesh, ...planetSystem.selectableBodies],
         initialFocusedBody: earthEntity.mesh,
       });
 
-      const getViewportSize = () => {
-        const rect = host.getBoundingClientRect();
-        const width = Math.max(
-          host.clientWidth,
-          Math.floor(rect.width),
-          window.innerWidth,
-          320,
-        );
-        const height = Math.max(
-          host.clientHeight,
-          Math.floor(rect.height),
-          window.innerHeight,
-          320,
-        );
-        return { width, height };
+      runtimeRef.current = {
+        planetSystem,
+        sunVisual,
+        starField,
+        focusController,
       };
-
-      const onResize = () => {
-        const { width, height } = getViewportSize();
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
-      };
-      onResize();
-
-      const resizeObserver = new ResizeObserver(() => {
-        onResize();
-      });
-      resizeObserver.observe(host);
-
-      const clock = new THREE.Clock();
-      let animationId = 0;
-      let sunAnimationTime = 0;
-
-      const animate = () => {
-        const delta = Math.min(clock.getDelta(), 0.1);
-        const scaledDelta = delta * timeScaleRef.current;
-        sunAnimationTime += scaledDelta;
-        planetSystem.update(scaledDelta);
-        starField.update(camera.position, scaledDelta);
-        sunVisual.update(scaledDelta, sunAnimationTime);
-        focusController.update();
-        controls.update();
-        renderer.render(scene, camera);
-        animationId = window.requestAnimationFrame(animate);
-      };
-
-      window.addEventListener("resize", onResize);
-      animate();
 
       teardown = () => {
-        window.removeEventListener("resize", onResize);
-        resizeObserver.disconnect();
-        window.cancelAnimationFrame(animationId);
+        runtimeRef.current = null;
+        animationTimeRef.current = 0;
         focusController.dispose();
         planetSystem.dispose();
         starField.dispose();
         sunVisual.dispose();
-        lighting.dispose();
         disposeTextures(allTextures);
-        controls.stopListenToKeyEvents();
-        controls.dispose();
-        renderer.dispose();
-        if (host.contains(renderer.domElement)) {
-          host.removeChild(renderer.domElement);
-        }
       };
 
-      if (disposed) {
+      if (disposed && teardown) {
         teardown();
       }
     };
@@ -346,6 +245,52 @@ export function useSolarScene({ hostRef, timeScale }: UseSolarSceneOptions) {
       if (teardown) {
         teardown();
       }
+      lighting.dispose();
     };
-  }, [hostRef, hmrVersion]);
+  }, [camera, controls, gl, scene]);
+
+  useFrame((_, delta) => {
+    const runtime = runtimeRef.current;
+    if (!runtime) {
+      return;
+    }
+
+    const scaledDelta = Math.min(delta, 0.1) * timeScaleRef.current;
+    animationTimeRef.current += scaledDelta;
+    runtime.planetSystem.update(scaledDelta);
+    runtime.starField.update(camera.position, scaledDelta);
+    runtime.sunVisual.update(scaledDelta, animationTimeRef.current);
+    runtime.focusController.update();
+  });
+
+  return (
+    <OrbitControls
+      ref={onControlsReady}
+      makeDefault
+      enablePan
+      enableZoom
+      enableDamping
+      dampingFactor={0.06}
+      rotateSpeed={0.75}
+      zoomSpeed={1.2}
+      panSpeed={1.35}
+    />
+  );
+}
+
+export function SolarSceneCanvas({ timeScale }: SolarSceneCanvasProps) {
+  return (
+    <Canvas
+      camera={{ fov: 45, near: 0.1, far: 600, position: [0, 0.25, 13] }}
+      gl={{ antialias: true, alpha: true }}
+      dpr={[1, 2]}
+      onCreated={({ gl }) => {
+        gl.outputColorSpace = THREE.SRGBColorSpace;
+        gl.toneMapping = THREE.ACESFilmicToneMapping;
+        gl.toneMappingExposure = 1.22;
+      }}
+    >
+      <SolarSceneContent timeScale={timeScale} />
+    </Canvas>
+  );
 }
