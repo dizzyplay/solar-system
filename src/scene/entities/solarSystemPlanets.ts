@@ -106,6 +106,7 @@ type EarthTextureProps = {
   day: THREE.Texture;
   normal: THREE.Texture;
   specular: THREE.Texture;
+  night: THREE.Texture;
 };
 
 export function getEarthPlanetConfig(textures: EarthTextureProps): PlanetConfig {
@@ -134,6 +135,13 @@ export function getEarthPlanetConfig(textures: EarthTextureProps): PlanetConfig 
         rotation: { x: 0.15 },
       },
     },
+    nightLights: [
+      {
+        texture: textures.night,
+        intensity: 1.25,
+        color: "#ffd9ac",
+      },
+    ],
   };
 }
 
@@ -624,6 +632,7 @@ type SolarSystemPlanetTextures = {
   earthDay: THREE.Texture;
   earthNormal: THREE.Texture;
   earthSpecular: THREE.Texture;
+  earthNight: THREE.Texture;
   mercury: THREE.Texture;
   venus: THREE.Texture;
   venusClouds: THREE.Texture;
@@ -677,6 +686,7 @@ export function getSolarSystemPlanetDefinitions(
         day: textures.earthDay,
         normal: textures.earthNormal,
         specular: textures.earthSpecular,
+        night: textures.earthNight,
       }),
       orbitLine: {
         color: 0xffd791,

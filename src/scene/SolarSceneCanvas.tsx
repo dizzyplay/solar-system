@@ -22,6 +22,7 @@ type SceneTextures = {
   earthDay: THREE.Texture;
   earthNormal: THREE.Texture;
   earthSpecular: THREE.Texture;
+  earthNight: THREE.Texture;
   mercuryTexture: THREE.Texture;
   venusTexture: THREE.Texture;
   venusCloudTexture: THREE.Texture;
@@ -66,6 +67,7 @@ function configureTextures(
 ) {
   const colorTextures = [
     sceneTextures.earthDay,
+    sceneTextures.earthNight,
     sceneTextures.mercuryTexture,
     sceneTextures.venusTexture,
     sceneTextures.venusCloudTexture,
@@ -96,6 +98,7 @@ function configureTextures(
     sceneTextures.earthDay,
     sceneTextures.earthNormal,
     sceneTextures.earthSpecular,
+    sceneTextures.earthNight,
     sceneTextures.mercuryTexture,
     sceneTextures.venusTexture,
     sceneTextures.venusCloudTexture,
@@ -127,6 +130,7 @@ function configureTextures(
     sceneTextures.earthDay,
     sceneTextures.earthNormal,
     sceneTextures.earthSpecular,
+    sceneTextures.earthNight,
     sceneTextures.mercuryTexture,
     sceneTextures.venusTexture,
     sceneTextures.venusCloudTexture,
@@ -226,6 +230,7 @@ function SolarSceneContent({
         earthDay,
         earthNormal,
         earthSpecular,
+        earthNight,
         mercuryTexture,
         venusTexture,
         venusCloudTexture,
@@ -251,6 +256,7 @@ function SolarSceneContent({
         textureLoader.loadAsync(TEXTURES.earthDay),
         textureLoader.loadAsync(TEXTURES.earthNormal),
         textureLoader.loadAsync(TEXTURES.earthSpecular),
+        textureLoader.loadAsync(TEXTURES.earthNight),
         textureLoader.loadAsync(TEXTURES.mercury),
         textureLoader.loadAsync(TEXTURES.venus),
         textureLoader.loadAsync(TEXTURES.venusClouds),
@@ -278,6 +284,7 @@ function SolarSceneContent({
         earthDay,
         earthNormal,
         earthSpecular,
+        earthNight,
         moonTexture,
         mercuryTexture,
         venusTexture,
@@ -317,6 +324,7 @@ function SolarSceneContent({
           earthDay: sceneTextures.earthDay,
           earthNormal: sceneTextures.earthNormal,
           earthSpecular: sceneTextures.earthSpecular,
+          earthNight: sceneTextures.earthNight,
           mercury: sceneTextures.mercuryTexture,
           venus: sceneTextures.venusTexture,
           venusClouds: sceneTextures.venusCloudTexture,

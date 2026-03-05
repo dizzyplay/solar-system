@@ -50,6 +50,7 @@ export type PlanetConfig = {
   orbit?: PlanetOrbitOptions;
   layers?: PlanetLayerOptions[];
   rings?: PlanetRingOptions[];
+  nightLights?: PlanetNightLightOptions[];
 };
 
 export type PlanetEntity = PlanetMeshParts & {
@@ -85,6 +86,13 @@ export type PlanetRingOptions = {
     blending?: THREE.Blending;
     side?: THREE.Side;
   };
+};
+
+export type PlanetNightLightOptions = {
+  texture: THREE.Texture;
+  radiusScale?: number;
+  intensity?: number;
+  color?: THREE.ColorRepresentation;
 };
 
 type PlanetMaterialRuntimeOptions = PlanetMaterialOptions & {
@@ -215,6 +223,10 @@ export function createPlanetEntity(
     geometry: THREE.RingGeometry;
     material: THREE.MeshPhongMaterial;
   }> = [];
+  const nightLightParts: Array<{
+    geometry: THREE.SphereGeometry;
+    material: THREE.ShaderMaterial;
+  }> = [];
   const layerSegments = {
     width: config.mesh.widthSegments ?? 96,
     height: config.mesh.heightSegments ?? 96,
@@ -264,6 +276,67 @@ export function createPlanetEntity(
     }
   }
 
+  if (config.nightLights) {
+    const sunPosition = config.orbit?.centerPosition ?? new THREE.Vector3();
+    for (const nightLightConfig of config.nightLights) {
+      const geometry = new THREE.SphereGeometry(
+        config.mesh.radius * (nightLightConfig.radiusScale ?? 1.002),
+        layerSegments.width,
+        layerSegments.height,
+      );
+      const material = new THREE.ShaderMaterial({
+        uniforms: {
+          nightMap: { value: nightLightConfig.texture },
+          sunPosition: { value: sunPosition.clone() },
+          tint: { value: new THREE.Color(nightLightConfig.color ?? "#ffd7a3") },
+          intensity: { value: nightLightConfig.intensity ?? 1 },
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          varying vec3 vWorldNormal;
+          varying vec3 vWorldPosition;
+
+          void main() {
+            vUv = uv;
+            vWorldNormal = normalize(mat3(modelMatrix) * normal);
+            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPosition.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPosition;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D nightMap;
+          uniform vec3 sunPosition;
+          uniform vec3 tint;
+          uniform float intensity;
+          varying vec2 vUv;
+          varying vec3 vWorldNormal;
+          varying vec3 vWorldPosition;
+
+          void main() {
+            vec3 toSun = normalize(sunPosition - vWorldPosition);
+            float litAmount = dot(normalize(vWorldNormal), toSun);
+            float dayAmount = smoothstep(-0.05, 0.2, litAmount);
+            float nightAmount = 1.0 - dayAmount;
+
+            vec3 nightColor = texture2D(nightMap, vUv).rgb * tint * intensity;
+            float luminance = dot(nightColor, vec3(0.2126, 0.7152, 0.0722));
+            float alpha = clamp(luminance * nightAmount * 1.6, 0.0, 1.0);
+
+            gl_FragColor = vec4(nightColor * nightAmount, alpha);
+          }
+        `,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      const nightLightMesh = new THREE.Mesh(geometry, material);
+      // Attach to the rotating planet mesh so night lights spin with the surface.
+      mesh.add(nightLightMesh);
+      nightLightParts.push({ geometry, material });
+    }
+  }
+
   const spinSpeed = config.spinSpeed ?? 0;
   const orbitSpeed = config.orbit?.speed ?? 0;
   const update = (delta: number) => {
@@ -291,6 +364,10 @@ export function createPlanetEntity(
     for (const ring of ringParts) {
       ring.geometry.dispose();
       ring.material.dispose();
+    }
+    for (const nightLight of nightLightParts) {
+      nightLight.geometry.dispose();
+      nightLight.material.dispose();
     }
   };
 

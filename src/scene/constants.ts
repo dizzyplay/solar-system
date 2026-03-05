@@ -208,6 +208,7 @@ export const TEXTURES = {
   earthDay: "/textures/planets/earth_day.jpg",
   earthNormal: "/textures/planets/earth_normal.jpg",
   earthSpecular: "/textures/planets/earth_specular.jpg",
+  earthNight: "/textures/planets/earth_night.png",
   mercury: "/textures/planets/mercury.jpg",
   venus: "/textures/planets/venus.jpg",
   venusClouds: "/textures/planets/venus_clouds.jpg",
