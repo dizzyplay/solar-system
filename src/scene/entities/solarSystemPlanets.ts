@@ -624,13 +624,26 @@ type SolarSystemPlanetTextures = {
   earthDay: THREE.Texture;
   earthNormal: THREE.Texture;
   earthSpecular: THREE.Texture;
-  moon: THREE.Texture;
   mercury: THREE.Texture;
   venus: THREE.Texture;
   venusClouds: THREE.Texture;
   mars: THREE.Texture;
   jupiter: THREE.Texture;
   saturn: THREE.Texture;
+  uranus: THREE.Texture;
+  neptune: THREE.Texture;
+  moon: THREE.Texture;
+  io: THREE.Texture;
+  europa: THREE.Texture;
+  ganymede: THREE.Texture;
+  callisto: THREE.Texture;
+  titan: THREE.Texture;
+  rhea: THREE.Texture;
+  iapetus: THREE.Texture;
+  dione: THREE.Texture;
+  tethys: THREE.Texture;
+  enceladus: THREE.Texture;
+  mimas: THREE.Texture;
   saturnRing: THREE.Texture;
 };
 
@@ -705,7 +718,7 @@ export function getSolarSystemPlanetDefinitions(
     },
     {
       id: "uranus",
-      config: getUranusPlanetConfig(textures.jupiter),
+      config: getUranusPlanetConfig(textures.uranus),
       orbitLine: {
         color: 0x9fd8d8,
         dashSize: 0.62,
@@ -715,7 +728,7 @@ export function getSolarSystemPlanetDefinitions(
     },
     {
       id: "neptune",
-      config: getNeptunePlanetConfig(textures.jupiter),
+      config: getNeptunePlanetConfig(textures.neptune),
       orbitLine: {
         color: 0x6e8eea,
         dashSize: 0.72,
@@ -726,7 +739,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "titan",
       parentId: "saturn",
-      config: getTitanPlanetConfig(textures.moon),
+      config: getTitanPlanetConfig(textures.titan),
       orbitLine: {
         color: 0xe1c38f,
         dashSize: 0.14,
@@ -738,7 +751,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "rhea",
       parentId: "saturn",
-      config: getRheaPlanetConfig(textures.moon),
+      config: getRheaPlanetConfig(textures.rhea),
       orbitLine: {
         color: 0xc5bbb0,
         dashSize: 0.12,
@@ -750,7 +763,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "iapetus",
       parentId: "saturn",
-      config: getIapetusPlanetConfig(textures.moon),
+      config: getIapetusPlanetConfig(textures.iapetus),
       orbitLine: {
         color: 0xb39f85,
         dashSize: 0.18,
@@ -762,7 +775,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "dione",
       parentId: "saturn",
-      config: getDionePlanetConfig(textures.moon),
+      config: getDionePlanetConfig(textures.dione),
       orbitLine: {
         color: 0xd0c5b6,
         dashSize: 0.1,
@@ -774,7 +787,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "tethys",
       parentId: "saturn",
-      config: getTethysPlanetConfig(textures.moon),
+      config: getTethysPlanetConfig(textures.tethys),
       orbitLine: {
         color: 0xd7cebf,
         dashSize: 0.1,
@@ -786,7 +799,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "enceladus",
       parentId: "saturn",
-      config: getEnceladusPlanetConfig(textures.moon),
+      config: getEnceladusPlanetConfig(textures.enceladus),
       orbitLine: {
         color: 0xe0dad0,
         dashSize: 0.09,
@@ -798,7 +811,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "mimas",
       parentId: "saturn",
-      config: getMimasPlanetConfig(textures.moon),
+      config: getMimasPlanetConfig(textures.mimas),
       orbitLine: {
         color: 0xbeb5a8,
         dashSize: 0.08,
@@ -810,7 +823,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "io",
       parentId: "jupiter",
-      config: getIoPlanetConfig(textures.moon),
+      config: getIoPlanetConfig(textures.io),
       orbitLine: {
         color: 0xffc987,
         dashSize: 0.1,
@@ -822,7 +835,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "europa",
       parentId: "jupiter",
-      config: getEuropaPlanetConfig(textures.moon),
+      config: getEuropaPlanetConfig(textures.europa),
       orbitLine: {
         color: 0xd8d0be,
         dashSize: 0.11,
@@ -834,7 +847,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "ganymede",
       parentId: "jupiter",
-      config: getGanymedePlanetConfig(textures.moon),
+      config: getGanymedePlanetConfig(textures.ganymede),
       orbitLine: {
         color: 0xc2ad8a,
         dashSize: 0.12,
@@ -846,7 +859,7 @@ export function getSolarSystemPlanetDefinitions(
     {
       id: "callisto",
       parentId: "jupiter",
-      config: getCallistoPlanetConfig(textures.moon),
+      config: getCallistoPlanetConfig(textures.callisto),
       orbitLine: {
         color: 0x92816d,
         dashSize: 0.13,

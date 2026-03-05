@@ -10,7 +10,6 @@ import { getSolarSystemPlanetDefinitions } from "./entities/solarSystemPlanets";
 import type { FocusTargetId } from "./focusTargets";
 import { createSolarLighting, createSunVisual } from "./entities/sun";
 import { createFocusController } from "./interaction/focusController";
-import { createSaturnRingTexture, createSaturnSurfaceTexture } from "./saturnTextures";
 import { createSunHaloTexture, createSunTexture } from "./sunTextures";
 
 type SolarSceneCanvasProps = {
@@ -23,13 +22,26 @@ type SceneTextures = {
   earthDay: THREE.Texture;
   earthNormal: THREE.Texture;
   earthSpecular: THREE.Texture;
-  moonTexture: THREE.Texture;
   mercuryTexture: THREE.Texture;
   venusTexture: THREE.Texture;
   venusCloudTexture: THREE.Texture;
   marsTexture: THREE.Texture;
   jupiterTexture: THREE.Texture;
   saturnTexture: THREE.Texture;
+  uranusTexture: THREE.Texture;
+  neptuneTexture: THREE.Texture;
+  moonTexture: THREE.Texture;
+  ioTexture: THREE.Texture;
+  europaTexture: THREE.Texture;
+  ganymedeTexture: THREE.Texture;
+  callistoTexture: THREE.Texture;
+  titanTexture: THREE.Texture;
+  rheaTexture: THREE.Texture;
+  iapetusTexture: THREE.Texture;
+  dioneTexture: THREE.Texture;
+  tethysTexture: THREE.Texture;
+  enceladusTexture: THREE.Texture;
+  mimasTexture: THREE.Texture;
   saturnRingTexture: THREE.Texture;
   sunTexture: THREE.Texture;
   sunHaloTexture: THREE.Texture;
@@ -52,39 +64,89 @@ function configureTextures(
   renderer: THREE.WebGLRenderer,
   sceneTextures: SceneTextures,
 ) {
-  sceneTextures.earthDay.colorSpace = THREE.SRGBColorSpace;
-  sceneTextures.moonTexture.colorSpace = THREE.SRGBColorSpace;
-  sceneTextures.mercuryTexture.colorSpace = THREE.SRGBColorSpace;
-  sceneTextures.venusTexture.colorSpace = THREE.SRGBColorSpace;
-  sceneTextures.venusCloudTexture.colorSpace = THREE.SRGBColorSpace;
-  sceneTextures.marsTexture.colorSpace = THREE.SRGBColorSpace;
-  sceneTextures.jupiterTexture.colorSpace = THREE.SRGBColorSpace;
-  sceneTextures.saturnTexture.colorSpace = THREE.SRGBColorSpace;
-  sceneTextures.saturnRingTexture.colorSpace = THREE.SRGBColorSpace;
-
-  sceneTextures.earthDay.wrapS = THREE.RepeatWrapping;
-  sceneTextures.earthNormal.wrapS = THREE.RepeatWrapping;
-  sceneTextures.earthSpecular.wrapS = THREE.RepeatWrapping;
-  sceneTextures.moonTexture.wrapS = THREE.RepeatWrapping;
-  sceneTextures.mercuryTexture.wrapS = THREE.RepeatWrapping;
-  sceneTextures.venusTexture.wrapS = THREE.RepeatWrapping;
-  sceneTextures.venusCloudTexture.wrapS = THREE.RepeatWrapping;
-  sceneTextures.marsTexture.wrapS = THREE.RepeatWrapping;
-  sceneTextures.jupiterTexture.wrapS = THREE.RepeatWrapping;
-  sceneTextures.saturnTexture.wrapS = THREE.RepeatWrapping;
-
-  const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-  const textures = [
+  const colorTextures = [
     sceneTextures.earthDay,
-    sceneTextures.earthNormal,
-    sceneTextures.earthSpecular,
-    sceneTextures.moonTexture,
     sceneTextures.mercuryTexture,
     sceneTextures.venusTexture,
     sceneTextures.venusCloudTexture,
     sceneTextures.marsTexture,
     sceneTextures.jupiterTexture,
     sceneTextures.saturnTexture,
+    sceneTextures.uranusTexture,
+    sceneTextures.neptuneTexture,
+    sceneTextures.moonTexture,
+    sceneTextures.ioTexture,
+    sceneTextures.europaTexture,
+    sceneTextures.ganymedeTexture,
+    sceneTextures.callistoTexture,
+    sceneTextures.titanTexture,
+    sceneTextures.rheaTexture,
+    sceneTextures.iapetusTexture,
+    sceneTextures.dioneTexture,
+    sceneTextures.tethysTexture,
+    sceneTextures.enceladusTexture,
+    sceneTextures.mimasTexture,
+    sceneTextures.saturnRingTexture,
+  ];
+  for (const texture of colorTextures) {
+    texture.colorSpace = THREE.SRGBColorSpace;
+  }
+
+  const repeatingTextures = [
+    sceneTextures.earthDay,
+    sceneTextures.earthNormal,
+    sceneTextures.earthSpecular,
+    sceneTextures.mercuryTexture,
+    sceneTextures.venusTexture,
+    sceneTextures.venusCloudTexture,
+    sceneTextures.marsTexture,
+    sceneTextures.jupiterTexture,
+    sceneTextures.saturnTexture,
+    sceneTextures.uranusTexture,
+    sceneTextures.neptuneTexture,
+    sceneTextures.moonTexture,
+    sceneTextures.ioTexture,
+    sceneTextures.europaTexture,
+    sceneTextures.ganymedeTexture,
+    sceneTextures.callistoTexture,
+    sceneTextures.titanTexture,
+    sceneTextures.rheaTexture,
+    sceneTextures.iapetusTexture,
+    sceneTextures.dioneTexture,
+    sceneTextures.tethysTexture,
+    sceneTextures.enceladusTexture,
+    sceneTextures.mimasTexture,
+  ];
+  for (const texture of repeatingTextures) {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+  }
+
+  const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+  const textures = [
+    sceneTextures.earthDay,
+    sceneTextures.earthNormal,
+    sceneTextures.earthSpecular,
+    sceneTextures.mercuryTexture,
+    sceneTextures.venusTexture,
+    sceneTextures.venusCloudTexture,
+    sceneTextures.marsTexture,
+    sceneTextures.jupiterTexture,
+    sceneTextures.saturnTexture,
+    sceneTextures.uranusTexture,
+    sceneTextures.neptuneTexture,
+    sceneTextures.moonTexture,
+    sceneTextures.ioTexture,
+    sceneTextures.europaTexture,
+    sceneTextures.ganymedeTexture,
+    sceneTextures.callistoTexture,
+    sceneTextures.titanTexture,
+    sceneTextures.rheaTexture,
+    sceneTextures.iapetusTexture,
+    sceneTextures.dioneTexture,
+    sceneTextures.tethysTexture,
+    sceneTextures.enceladusTexture,
+    sceneTextures.mimasTexture,
     sceneTextures.saturnRingTexture,
     sceneTextures.sunTexture,
     sceneTextures.sunHaloTexture,
@@ -164,22 +226,52 @@ function SolarSceneContent({
         earthDay,
         earthNormal,
         earthSpecular,
-        moonTexture,
         mercuryTexture,
         venusTexture,
         venusCloudTexture,
         marsTexture,
         jupiterTexture,
+        saturnTexture,
+        uranusTexture,
+        neptuneTexture,
+        moonTexture,
+        ioTexture,
+        europaTexture,
+        ganymedeTexture,
+        callistoTexture,
+        titanTexture,
+        rheaTexture,
+        iapetusTexture,
+        dioneTexture,
+        tethysTexture,
+        enceladusTexture,
+        mimasTexture,
+        saturnRingTexture,
       ] = await Promise.all([
         textureLoader.loadAsync(TEXTURES.earthDay),
         textureLoader.loadAsync(TEXTURES.earthNormal),
         textureLoader.loadAsync(TEXTURES.earthSpecular),
-        textureLoader.loadAsync(TEXTURES.moon),
         textureLoader.loadAsync(TEXTURES.mercury),
         textureLoader.loadAsync(TEXTURES.venus),
         textureLoader.loadAsync(TEXTURES.venusClouds),
         textureLoader.loadAsync(TEXTURES.mars),
         textureLoader.loadAsync(TEXTURES.jupiter),
+        textureLoader.loadAsync(TEXTURES.saturn),
+        textureLoader.loadAsync(TEXTURES.uranus),
+        textureLoader.loadAsync(TEXTURES.neptune),
+        textureLoader.loadAsync(TEXTURES.moon),
+        textureLoader.loadAsync(TEXTURES.io),
+        textureLoader.loadAsync(TEXTURES.europa),
+        textureLoader.loadAsync(TEXTURES.ganymede),
+        textureLoader.loadAsync(TEXTURES.callisto),
+        textureLoader.loadAsync(TEXTURES.titan),
+        textureLoader.loadAsync(TEXTURES.rhea),
+        textureLoader.loadAsync(TEXTURES.iapetus),
+        textureLoader.loadAsync(TEXTURES.dione),
+        textureLoader.loadAsync(TEXTURES.tethys),
+        textureLoader.loadAsync(TEXTURES.enceladus),
+        textureLoader.loadAsync(TEXTURES.mimas),
+        textureLoader.loadAsync(TEXTURES.saturnRing),
       ]);
 
       const sceneTextures: SceneTextures = {
@@ -192,8 +284,21 @@ function SolarSceneContent({
         venusCloudTexture,
         marsTexture,
         jupiterTexture,
-        saturnTexture: createSaturnSurfaceTexture(),
-        saturnRingTexture: createSaturnRingTexture(),
+        saturnTexture,
+        uranusTexture,
+        neptuneTexture,
+        ioTexture,
+        europaTexture,
+        ganymedeTexture,
+        callistoTexture,
+        titanTexture,
+        rheaTexture,
+        iapetusTexture,
+        dioneTexture,
+        tethysTexture,
+        enceladusTexture,
+        mimasTexture,
+        saturnRingTexture,
         sunTexture: createSunTexture(),
         sunHaloTexture: createSunHaloTexture(),
       };
@@ -212,13 +317,26 @@ function SolarSceneContent({
           earthDay: sceneTextures.earthDay,
           earthNormal: sceneTextures.earthNormal,
           earthSpecular: sceneTextures.earthSpecular,
-          moon: sceneTextures.moonTexture,
           mercury: sceneTextures.mercuryTexture,
           venus: sceneTextures.venusTexture,
           venusClouds: sceneTextures.venusCloudTexture,
           mars: sceneTextures.marsTexture,
           jupiter: sceneTextures.jupiterTexture,
           saturn: sceneTextures.saturnTexture,
+          uranus: sceneTextures.uranusTexture,
+          neptune: sceneTextures.neptuneTexture,
+          moon: sceneTextures.moonTexture,
+          io: sceneTextures.ioTexture,
+          europa: sceneTextures.europaTexture,
+          ganymede: sceneTextures.ganymedeTexture,
+          callisto: sceneTextures.callistoTexture,
+          titan: sceneTextures.titanTexture,
+          rhea: sceneTextures.rheaTexture,
+          iapetus: sceneTextures.iapetusTexture,
+          dione: sceneTextures.dioneTexture,
+          tethys: sceneTextures.tethysTexture,
+          enceladus: sceneTextures.enceladusTexture,
+          mimas: sceneTextures.mimasTexture,
           saturnRing: sceneTextures.saturnRingTexture,
         }),
       );
