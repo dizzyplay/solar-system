@@ -45,11 +45,16 @@ import {
   MOON_RADIUS_RATIO,
   SUN_POSITION,
   SATURN_AXIAL_TILT,
+  SATURN_RADIUS,
   SATURN_ORBIT_INCLINATION,
   SATURN_ORBIT_LOCAL_OFFSET,
   SATURN_ORBIT_SPEED,
   SATURN_RADIUS_RATIO,
   SATURN_ROTATION_SPEED,
+  TITAN_ORBIT_INCLINATION,
+  TITAN_ORBIT_RADIUS,
+  TITAN_ORBIT_SPEED,
+  TITAN_RADIUS_RATIO,
   VENUS_AXIAL_TILT,
   VENUS_CLOUD_ROTATION_SPEED,
   VENUS_ORBIT_INCLINATION,
@@ -375,6 +380,28 @@ export function getCallistoPlanetConfig(texture: THREE.Texture): PlanetConfig {
   };
 }
 
+export function getTitanPlanetConfig(texture: THREE.Texture): PlanetConfig {
+  return {
+    orbit: {
+      initialOffset: new THREE.Vector3(TITAN_ORBIT_RADIUS, 0, 0),
+      inclinationX: TITAN_ORBIT_INCLINATION,
+      speed: TITAN_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * TITAN_RADIUS_RATIO,
+      widthSegments: 88,
+      heightSegments: 88,
+      focusDistance: Math.max(0.72, SATURN_RADIUS * 0.2),
+      material: {
+        map: texture,
+        color: "#d1a766",
+        specular: "#5d4731",
+        shininess: 3,
+      },
+    },
+  };
+}
+
 type SolarSystemPlanetTextures = {
   earthDay: THREE.Texture;
   earthNormal: THREE.Texture;
@@ -457,6 +484,18 @@ export function getSolarSystemPlanetDefinitions(
         gapSize: 0.28,
         opacity: 0.24,
       },
+    },
+    {
+      id: "titan",
+      parentId: "saturn",
+      config: getTitanPlanetConfig(textures.moon),
+      orbitLine: {
+        color: 0xe1c38f,
+        dashSize: 0.14,
+        gapSize: 0.1,
+        opacity: 0.3,
+      },
+      lookAtId: "saturn",
     },
     {
       id: "io",
