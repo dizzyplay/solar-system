@@ -1,5 +1,8 @@
 # Texture Sources
 
+## Sun
+- Sun surface: https://www.solarsystemscope.com/textures/download/2k_sun.jpg
+
 ## Planets and rings
 - Mercury, Venus, Venus clouds, Earth maps, Mars, Jupiter: existing project textures (retained)
 - Saturn surface: https://www.solarsystemscope.com/textures/download/2k_saturn.jpg

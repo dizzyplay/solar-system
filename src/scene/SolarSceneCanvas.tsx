@@ -21,7 +21,7 @@ import { getSolarSystemPlanetDefinitions } from "./entities/solarSystemPlanets";
 import type { FocusTargetId } from "./focusTargets";
 import { createSolarLighting, createSunVisual } from "./entities/sun";
 import { createFocusController } from "./interaction/focusController";
-import { createSunHaloTexture, createSunTexture } from "./sunTextures";
+import { createSunHaloTexture } from "./sunTextures";
 
 type SolarSceneCanvasProps = {
   timeScale: number;
@@ -284,6 +284,7 @@ function SolarSceneContent({
         enceladusTexture,
         mimasTexture,
         saturnRingTexture,
+        sunTexture,
       ] = await Promise.all([
         textureLoader.loadAsync(TEXTURES.earthDay),
         textureLoader.loadAsync(TEXTURES.earthNormal),
@@ -310,6 +311,7 @@ function SolarSceneContent({
         textureLoader.loadAsync(TEXTURES.enceladus),
         textureLoader.loadAsync(TEXTURES.mimas),
         textureLoader.loadAsync(TEXTURES.saturnRing),
+        textureLoader.loadAsync(TEXTURES.sun),
       ]);
 
       const sceneTextures: SceneTextures = {
@@ -338,7 +340,7 @@ function SolarSceneContent({
         enceladusTexture,
         mimasTexture,
         saturnRingTexture,
-        sunTexture: createSunTexture(),
+        sunTexture,
         sunHaloTexture: createSunHaloTexture(),
       };
 

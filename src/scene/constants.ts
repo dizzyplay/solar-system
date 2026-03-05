@@ -234,4 +234,5 @@ export const TEXTURES = {
   enceladus: "/textures/moons/enceladus.jpg",
   mimas: "/textures/moons/mimas.jpg",
   saturnRing: "/textures/rings/saturn_ring_alpha.png",
+  sun: "/textures/planets/sun.jpg",
 } as const;
