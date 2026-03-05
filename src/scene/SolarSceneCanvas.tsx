@@ -9,6 +9,7 @@ import { createPlanetSystem } from "./entities/planetSystem";
 import { getSolarSystemPlanetDefinitions } from "./entities/solarSystemPlanets";
 import { createSolarLighting, createSunVisual } from "./entities/sun";
 import { createFocusController } from "./interaction/focusController";
+import { createSaturnRingTexture, createSaturnSurfaceTexture } from "./saturnTextures";
 import { createSunHaloTexture, createSunTexture } from "./sunTextures";
 
 type SolarSceneCanvasProps = {
@@ -25,6 +26,8 @@ type SceneTextures = {
   venusCloudTexture: THREE.Texture;
   marsTexture: THREE.Texture;
   jupiterTexture: THREE.Texture;
+  saturnTexture: THREE.Texture;
+  saturnRingTexture: THREE.Texture;
   sunTexture: THREE.Texture;
   sunHaloTexture: THREE.Texture;
 };
@@ -53,6 +56,8 @@ function configureTextures(
   sceneTextures.venusCloudTexture.colorSpace = THREE.SRGBColorSpace;
   sceneTextures.marsTexture.colorSpace = THREE.SRGBColorSpace;
   sceneTextures.jupiterTexture.colorSpace = THREE.SRGBColorSpace;
+  sceneTextures.saturnTexture.colorSpace = THREE.SRGBColorSpace;
+  sceneTextures.saturnRingTexture.colorSpace = THREE.SRGBColorSpace;
 
   sceneTextures.earthDay.wrapS = THREE.RepeatWrapping;
   sceneTextures.earthNormal.wrapS = THREE.RepeatWrapping;
@@ -63,6 +68,7 @@ function configureTextures(
   sceneTextures.venusCloudTexture.wrapS = THREE.RepeatWrapping;
   sceneTextures.marsTexture.wrapS = THREE.RepeatWrapping;
   sceneTextures.jupiterTexture.wrapS = THREE.RepeatWrapping;
+  sceneTextures.saturnTexture.wrapS = THREE.RepeatWrapping;
 
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
   const textures = [
@@ -75,6 +81,8 @@ function configureTextures(
     sceneTextures.venusCloudTexture,
     sceneTextures.marsTexture,
     sceneTextures.jupiterTexture,
+    sceneTextures.saturnTexture,
+    sceneTextures.saturnRingTexture,
     sceneTextures.sunTexture,
     sceneTextures.sunHaloTexture,
   ];
@@ -164,6 +172,8 @@ function SolarSceneContent({ timeScale }: SolarSceneCanvasProps) {
         venusCloudTexture,
         marsTexture,
         jupiterTexture,
+        saturnTexture: createSaturnSurfaceTexture(),
+        saturnRingTexture: createSaturnRingTexture(),
         sunTexture: createSunTexture(),
         sunHaloTexture: createSunHaloTexture(),
       };
@@ -188,6 +198,8 @@ function SolarSceneContent({ timeScale }: SolarSceneCanvasProps) {
           venusClouds: sceneTextures.venusCloudTexture,
           mars: sceneTextures.marsTexture,
           jupiter: sceneTextures.jupiterTexture,
+          saturn: sceneTextures.saturnTexture,
+          saturnRing: sceneTextures.saturnRingTexture,
         }),
       );
 

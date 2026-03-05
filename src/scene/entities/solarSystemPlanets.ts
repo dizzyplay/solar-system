@@ -44,6 +44,12 @@ import {
   MOON_ORBIT_SPEED,
   MOON_RADIUS_RATIO,
   SUN_POSITION,
+  SATURN_AXIAL_TILT,
+  SATURN_ORBIT_INCLINATION,
+  SATURN_ORBIT_LOCAL_OFFSET,
+  SATURN_ORBIT_SPEED,
+  SATURN_RADIUS_RATIO,
+  SATURN_ROTATION_SPEED,
   VENUS_AXIAL_TILT,
   VENUS_CLOUD_ROTATION_SPEED,
   VENUS_ORBIT_INCLINATION,
@@ -223,6 +229,64 @@ export function getJupiterPlanetConfig(texture: THREE.Texture): PlanetConfig {
   };
 }
 
+export function getSaturnPlanetConfig(
+  surfaceTexture: THREE.Texture,
+  ringTexture: THREE.Texture,
+): PlanetConfig {
+  return {
+    axialTiltZ: SATURN_AXIAL_TILT,
+    spinSpeed: SATURN_ROTATION_SPEED,
+    orbit: {
+      centerPosition: SUN_POSITION,
+      initialOffset: SATURN_ORBIT_LOCAL_OFFSET,
+      inclinationX: SATURN_ORBIT_INCLINATION,
+      speed: SATURN_ORBIT_SPEED,
+    },
+    mesh: {
+      radius: EARTH_RADIUS * SATURN_RADIUS_RATIO,
+      widthSegments: 150,
+      heightSegments: 150,
+      focusDistance: 3.2,
+      material: {
+        map: surfaceTexture,
+        color: "#f1e1bf",
+        specular: "#6b5842",
+        shininess: 5,
+      },
+    },
+    rings: [
+      {
+        innerRadiusScale: 1.38,
+        outerRadiusScale: 2.62,
+        tiltX: Math.PI / 2,
+        material: {
+          map: ringTexture,
+          color: "#f0dfc5",
+          transparent: true,
+          opacity: 0.78,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          shininess: 1,
+        },
+      },
+      {
+        innerRadiusScale: 1.16,
+        outerRadiusScale: 1.38,
+        tiltX: Math.PI / 2,
+        material: {
+          map: ringTexture,
+          color: "#c5ad87",
+          transparent: true,
+          opacity: 0.22,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          shininess: 1,
+        },
+      },
+    ],
+  };
+}
+
 export function getIoPlanetConfig(texture: THREE.Texture): PlanetConfig {
   return {
     orbit: {
@@ -321,6 +385,8 @@ type SolarSystemPlanetTextures = {
   venusClouds: THREE.Texture;
   mars: THREE.Texture;
   jupiter: THREE.Texture;
+  saturn: THREE.Texture;
+  saturnRing: THREE.Texture;
 };
 
 export function getSolarSystemPlanetDefinitions(
@@ -380,6 +446,16 @@ export function getSolarSystemPlanetDefinitions(
         dashSize: 0.42,
         gapSize: 0.24,
         opacity: 0.28,
+      },
+    },
+    {
+      id: "saturn",
+      config: getSaturnPlanetConfig(textures.saturn, textures.saturnRing),
+      orbitLine: {
+        color: 0xd8c69f,
+        dashSize: 0.5,
+        gapSize: 0.28,
+        opacity: 0.24,
       },
     },
     {

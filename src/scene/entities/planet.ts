@@ -49,6 +49,7 @@ export type PlanetConfig = {
   spinSpeed?: number;
   orbit?: PlanetOrbitOptions;
   layers?: PlanetLayerOptions[];
+  rings?: PlanetRingOptions[];
 };
 
 export type PlanetEntity = PlanetMeshParts & {
@@ -73,6 +74,82 @@ export type PlanetLayerOptions = {
   };
 };
 
+export type PlanetRingOptions = {
+  innerRadiusScale: number;
+  outerRadiusScale: number;
+  tiltX?: number;
+  material: PlanetMaterialOptions & {
+    transparent?: boolean;
+    opacity?: number;
+    depthWrite?: boolean;
+    blending?: THREE.Blending;
+    side?: THREE.Side;
+  };
+};
+
+type PlanetMaterialRuntimeOptions = PlanetMaterialOptions & {
+  transparent?: boolean;
+  opacity?: number;
+  depthWrite?: boolean;
+  blending?: THREE.Blending;
+  side?: THREE.Side;
+};
+
+function createPhongMaterial(options: PlanetMaterialRuntimeOptions) {
+  const params: THREE.MeshPhongMaterialParameters = {};
+
+  if (options.map !== undefined) {
+    params.map = options.map;
+  }
+  if (options.normalMap !== undefined) {
+    params.normalMap = options.normalMap;
+  }
+  if (options.specularMap !== undefined) {
+    params.specularMap = options.specularMap;
+  }
+  if (options.specular !== undefined) {
+    params.specular = new THREE.Color(options.specular);
+  }
+  if (options.shininess !== undefined) {
+    params.shininess = options.shininess;
+  }
+  if (options.bumpMap !== undefined) {
+    params.bumpMap = options.bumpMap;
+  }
+  if (options.bumpScale !== undefined) {
+    params.bumpScale = options.bumpScale;
+  }
+  if (options.color !== undefined) {
+    params.color = options.color;
+  }
+  if (options.transparent !== undefined) {
+    params.transparent = options.transparent;
+  }
+  if (options.opacity !== undefined) {
+    params.opacity = options.opacity;
+  }
+  if (options.depthWrite !== undefined) {
+    params.depthWrite = options.depthWrite;
+  }
+  if (options.blending !== undefined) {
+    params.blending = options.blending;
+  }
+  if (options.side !== undefined) {
+    params.side = options.side;
+  }
+
+  const material = new THREE.MeshPhongMaterial(params);
+  if (options.normalScale !== undefined) {
+    if (typeof options.normalScale === "number") {
+      material.normalScale.setScalar(options.normalScale);
+    } else {
+      material.normalScale.copy(options.normalScale);
+    }
+  }
+
+  return material;
+}
+
 export function createPlanetMesh(options: PlanetMeshOptions): PlanetMeshParts {
   const geometry = new THREE.SphereGeometry(
     options.radius,
@@ -80,27 +157,7 @@ export function createPlanetMesh(options: PlanetMeshOptions): PlanetMeshParts {
     options.heightSegments ?? 96,
   );
 
-  const material = new THREE.MeshPhongMaterial({
-    map: options.material.map,
-    normalMap: options.material.normalMap,
-    specularMap: options.material.specularMap,
-    specular:
-      options.material.specular === undefined
-        ? undefined
-        : new THREE.Color(options.material.specular),
-    shininess: options.material.shininess,
-    bumpMap: options.material.bumpMap,
-    bumpScale: options.material.bumpScale,
-    color: options.material.color,
-  });
-
-  if (options.material.normalScale !== undefined) {
-    if (typeof options.material.normalScale === "number") {
-      material.normalScale.setScalar(options.material.normalScale);
-    } else {
-      material.normalScale.copy(options.material.normalScale);
-    }
-  }
+  const material = createPhongMaterial(options.material);
 
   const mesh = new THREE.Mesh(geometry, material);
   if (options.transform?.position) {
@@ -154,6 +211,10 @@ export function createPlanetEntity(
 
   const layerParts: PlanetMeshParts[] = [];
   const layerSpeeds: number[] = [];
+  const ringParts: Array<{
+    geometry: THREE.RingGeometry;
+    material: THREE.MeshPhongMaterial;
+  }> = [];
   const layerSegments = {
     width: config.mesh.widthSegments ?? 96,
     height: config.mesh.heightSegments ?? 96,
@@ -181,6 +242,28 @@ export function createPlanetEntity(
     }
   }
 
+  if (config.rings) {
+    for (const ringConfig of config.rings) {
+      const geometry = new THREE.RingGeometry(
+        config.mesh.radius * ringConfig.innerRadiusScale,
+        config.mesh.radius * ringConfig.outerRadiusScale,
+        160,
+      );
+      const material = createPhongMaterial({
+        ...ringConfig.material,
+        transparent: ringConfig.material.transparent ?? true,
+        opacity: ringConfig.material.opacity ?? 1,
+        depthWrite: ringConfig.material.depthWrite ?? false,
+        blending: ringConfig.material.blending ?? THREE.NormalBlending,
+        side: ringConfig.material.side ?? THREE.DoubleSide,
+      });
+      const ringMesh = new THREE.Mesh(geometry, material);
+      ringMesh.rotation.x = ringConfig.tiltX ?? Math.PI / 2;
+      bodyGroup.add(ringMesh);
+      ringParts.push({ geometry, material });
+    }
+  }
+
   const spinSpeed = config.spinSpeed ?? 0;
   const orbitSpeed = config.orbit?.speed ?? 0;
   const update = (delta: number) => {
@@ -204,6 +287,10 @@ export function createPlanetEntity(
     for (const layer of layerParts) {
       layer.geometry.dispose();
       layer.material.dispose();
+    }
+    for (const ring of ringParts) {
+      ring.geometry.dispose();
+      ring.material.dispose();
     }
   };
 
