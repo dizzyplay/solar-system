@@ -4,12 +4,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
+  ASTEROID_BELT_INNER_AU,
+  ASTEROID_BELT_OUTER_AU,
+  ASTEROID_BELT_PARTICLE_COUNT,
+  ASTEROID_BELT_TILT_X,
   EARTH_ORBIT_LOCAL_OFFSET,
   SUN_DISTANCE,
   SUN_POSITION,
   SUN_RADIUS,
   TEXTURES,
 } from "./constants";
+import { createAsteroidBelt } from "./effects/asteroidBelt";
 import { createStarField } from "./effects/starField";
 import { createPlanetSystem } from "./entities/planetSystem";
 import { getSolarSystemPlanetDefinitions } from "./entities/solarSystemPlanets";
@@ -59,6 +64,7 @@ type SceneRuntime = {
   planetSystem: ReturnType<typeof createPlanetSystem>;
   sunVisual: ReturnType<typeof createSunVisual>;
   starField: ReturnType<typeof createStarField>;
+  asteroidBelt: ReturnType<typeof createAsteroidBelt>;
   focusController: ReturnType<typeof createFocusController>;
 };
 
@@ -382,6 +388,14 @@ function SolarSceneContent({
       });
 
       const starField = createStarField(scene);
+      const asteroidBelt = createAsteroidBelt(scene, {
+        centerPosition: SUN_POSITION,
+        earthOrbitRadius: earthSunReferenceDistance,
+        count: ASTEROID_BELT_PARTICLE_COUNT,
+        innerAu: ASTEROID_BELT_INNER_AU,
+        outerAu: ASTEROID_BELT_OUTER_AU,
+        tiltX: ASTEROID_BELT_TILT_X,
+      });
       const focusController = createFocusController({
         camera,
         controls,
@@ -413,6 +427,7 @@ function SolarSceneContent({
         planetSystem,
         sunVisual,
         starField,
+        asteroidBelt,
         focusController,
       };
 
@@ -430,6 +445,7 @@ function SolarSceneContent({
         focusController.dispose();
         planetSystem.dispose();
         starField.dispose();
+        asteroidBelt.dispose();
         sunVisual.dispose();
         disposeTextures(allTextures);
       };
@@ -463,6 +479,7 @@ function SolarSceneContent({
     animationTimeRef.current += scaledDelta;
     runtime.planetSystem.update(scaledDelta);
     runtime.starField.update(camera.position, scaledDelta);
+    runtime.asteroidBelt.update(scaledDelta);
     runtime.sunVisual.update(scaledDelta, animationTimeRef.current);
     runtime.focusController.update();
   });
