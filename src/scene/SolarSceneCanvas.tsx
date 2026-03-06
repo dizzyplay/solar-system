@@ -236,7 +236,7 @@ function SolarSceneContent({
       RIGHT: THREE.MOUSE.ROTATE,
     };
     controls.minDistance = 0.35;
-    controls.maxDistance = Math.max(120, SUN_DISTANCE * 3.2);
+    controls.maxDistance = Math.max(1320, SUN_DISTANCE * 3.2);
     controls.target.set(0, 0, 0);
     controls.update();
   }, [camera, controls]);
