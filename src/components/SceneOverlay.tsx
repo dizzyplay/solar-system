@@ -2,7 +2,7 @@ import { SUN_DISTANCE_COMPRESS_FACTOR } from "../scene/constants";
 import {
   MAJOR_FOCUS_TARGET_OPTIONS,
   getMajorFocusTargetId,
-  getMoonOptionsForMajorTarget,
+  getSatelliteOptionsForMajorTarget,
   type FocusTargetId,
 } from "../scene/focusTargets";
 
@@ -30,9 +30,9 @@ export function SceneOverlay({
   onFocusedTargetIdChange,
 }: SceneOverlayProps) {
   const majorTargetId = getMajorFocusTargetId(focusedTargetId);
-  const moonOptions = getMoonOptionsForMajorTarget(majorTargetId);
-  const moonSelectValue = moonOptions.some(
-    (moon) => moon.id === focusedTargetId,
+  const satelliteOptions = getSatelliteOptionsForMajorTarget(majorTargetId);
+  const satelliteSelectValue = satelliteOptions.some(
+    (satellite) => satellite.id === focusedTargetId,
   )
     ? focusedTargetId
     : majorTargetId;
@@ -113,18 +113,18 @@ export function SceneOverlay({
               </option>
             ))}
           </select>
-          {moonOptions.length > 0 ? (
+          {satelliteOptions.length > 0 ? (
             <>
               <label
-                htmlFor="focus-target-moon"
+                htmlFor="focus-target-satellite"
                 className="focus-label focus-sub-label"
               >
                 위성 선택
               </label>
               <select
-                id="focus-target-moon"
+                id="focus-target-satellite"
                 className="focus-select"
-                value={moonSelectValue}
+                value={satelliteSelectValue}
                 onChange={(event) => {
                   onFocusedTargetIdChange(
                     event.currentTarget.value as FocusTargetId,
@@ -132,9 +132,9 @@ export function SceneOverlay({
                 }}
               >
                 <option value={majorTargetId}>행성 본체</option>
-                {moonOptions.map((moon) => (
-                  <option key={moon.id} value={moon.id}>
-                    {moon.label}
+                {satelliteOptions.map((satellite) => (
+                  <option key={satellite.id} value={satellite.id}>
+                    {satellite.label}
                   </option>
                 ))}
               </select>
