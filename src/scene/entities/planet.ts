@@ -230,6 +230,8 @@ export function createPlanetEntity(
   if (typeof config.axialTiltZ === "number") {
     bodyGroup.rotation.z = config.axialTiltZ;
   }
+  mesh.userData.lightingRoot = bodyGroup;
+  mesh.userData.focusLightingEligible = true;
   bodyGroup.add(mesh);
 
   let orbitCenter: THREE.Group | undefined;

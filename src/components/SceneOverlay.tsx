@@ -16,6 +16,8 @@ type SceneOverlayProps = {
   focusedTargetId: FocusTargetId;
   trackingEnabled: boolean;
   onTrackingEnabledChange: (enabled: boolean) => void;
+  focusAssistLightingEnabled: boolean;
+  onFocusAssistLightingEnabledChange: (enabled: boolean) => void;
   onFocusedTargetIdChange: (nextTargetId: FocusTargetId) => void;
 };
 
@@ -27,6 +29,8 @@ export function SceneOverlay({
   focusedTargetId,
   trackingEnabled,
   onTrackingEnabledChange,
+  focusAssistLightingEnabled,
+  onFocusAssistLightingEnabledChange,
   onFocusedTargetIdChange,
 }: SceneOverlayProps) {
   const majorTargetId = getMajorFocusTargetId(focusedTargetId);
@@ -149,6 +153,16 @@ export function SceneOverlay({
               }}
             />
             <span>행성 추적 유지</span>
+          </label>
+          <label className="tracking-toggle">
+            <input
+              type="checkbox"
+              checked={focusAssistLightingEnabled}
+              onChange={(event) => {
+                onFocusAssistLightingEnabledChange(event.currentTarget.checked);
+              }}
+            />
+            <span>포커스 조명 보정</span>
           </label>
         </div>
       </div>

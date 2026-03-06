@@ -61,6 +61,8 @@ export function createSunVisual(
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.copy(options.sunPosition);
   mesh.userData.focusDistance = Math.max(options.sunRadius * 4.4, 5.4);
+  mesh.userData.lightingRoot = mesh;
+  mesh.userData.focusLightingEligible = false;
   scene.add(mesh);
 
   const haloMaterial = new THREE.SpriteMaterial({

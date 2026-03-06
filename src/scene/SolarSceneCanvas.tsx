@@ -21,6 +21,7 @@ import { createStarField } from "./effects/starField";
 import { createPlanetSystem } from "./entities/planetSystem";
 import { getSolarSystemPlanetDefinitions } from "./entities/solarSystemPlanets";
 import type { FocusTargetId } from "./focusTargets";
+import { createFocusAssistLighting } from "./focusAssistLighting";
 import { createSolarLighting, createSunVisual } from "./entities/sun";
 import { createFocusController } from "./interaction/focusController";
 import { createSaturnRingColorTexture } from "./saturnRingTextures";
@@ -31,6 +32,7 @@ type SolarSceneCanvasProps = {
   solarIrradiance: number;
   focusedTargetId: FocusTargetId;
   trackingEnabled: boolean;
+  focusAssistLightingEnabled: boolean;
   onFocusedTargetIdChange: (nextTargetId: FocusTargetId) => void;
 };
 
@@ -71,6 +73,7 @@ type SceneRuntime = {
   starField: ReturnType<typeof createStarField>;
   asteroidBelt: ReturnType<typeof createAsteroidBelt>;
   saturnRingLod: ReturnType<typeof createSaturnRingLod>;
+  focusAssistLighting: ReturnType<typeof createFocusAssistLighting>;
   focusController: ReturnType<typeof createFocusController>;
 };
 
@@ -197,6 +200,7 @@ function SolarSceneContent({
   solarIrradiance,
   focusedTargetId,
   trackingEnabled,
+  focusAssistLightingEnabled,
   onFocusedTargetIdChange,
 }: SolarSceneCanvasProps) {
   const { camera, gl, scene } = useThree();
@@ -206,6 +210,7 @@ function SolarSceneContent({
   const solarIrradianceRef = useRef(solarIrradiance);
   const focusedTargetIdRef = useRef<FocusTargetId>(focusedTargetId);
   const trackingEnabledRef = useRef(trackingEnabled);
+  const focusAssistLightingEnabledRef = useRef(focusAssistLightingEnabled);
   const focusTargetByIdRef = useRef(new Map<FocusTargetId, THREE.Object3D>());
   const focusIdByTargetRef = useRef(new Map<THREE.Object3D, FocusTargetId>());
   const animationTimeRef = useRef(0);
@@ -232,12 +237,18 @@ function SolarSceneContent({
     }
     const nextBody = focusTargetByIdRef.current.get(focusedTargetId) ?? null;
     runtime.focusController.setFocusedBody(nextBody);
+    runtime.focusAssistLighting.setFocusedBody(nextBody);
   }, [focusedTargetId]);
 
   useEffect(() => {
     trackingEnabledRef.current = trackingEnabled;
     runtimeRef.current?.focusController.setTrackingEnabled(trackingEnabled);
   }, [trackingEnabled]);
+
+  useEffect(() => {
+    focusAssistLightingEnabledRef.current = focusAssistLightingEnabled;
+    runtimeRef.current?.focusAssistLighting.setEnabled(focusAssistLightingEnabled);
+  }, [focusAssistLightingEnabled]);
 
   useEffect(() => {
     if (!(camera instanceof THREE.PerspectiveCamera) || !controls) {
@@ -445,6 +456,12 @@ function SolarSceneContent({
         mesh: saturnEntity.mesh,
         ringMeshes: saturnEntity.ringMeshes,
       });
+      const focusAssistLighting = createFocusAssistLighting({
+        scene,
+        camera,
+        controls,
+        enabled: focusAssistLightingEnabledRef.current,
+      });
       const focusController = createFocusController({
         camera,
         controls,
@@ -479,6 +496,7 @@ function SolarSceneContent({
         starField,
         asteroidBelt,
         saturnRingLod,
+        focusAssistLighting,
         focusController,
       };
 
@@ -486,6 +504,7 @@ function SolarSceneContent({
         focusedTargetIdRef.current === "none"
           ? null
           : (focusTargetById.get(focusedTargetIdRef.current) ?? earthEntity.mesh);
+      focusAssistLighting.setFocusedBody(initialFocusBody);
       focusController.setFocusedBody(initialFocusBody);
 
       teardown = () => {
@@ -494,6 +513,7 @@ function SolarSceneContent({
         focusIdByTargetRef.current.clear();
         animationTimeRef.current = 0;
         focusController.dispose();
+        focusAssistLighting.dispose();
         saturnRingLod.dispose();
         planetSystem.dispose();
         starField.dispose();
@@ -534,6 +554,7 @@ function SolarSceneContent({
     runtime.asteroidBelt.update(scaledDelta);
     runtime.saturnRingLod.update(camera.position, scaledDelta);
     runtime.sunVisual.update(scaledDelta, animationTimeRef.current);
+    runtime.focusAssistLighting.update();
     runtime.focusController.update();
   });
 
@@ -557,6 +578,7 @@ export function SolarSceneCanvas({
   solarIrradiance,
   focusedTargetId,
   trackingEnabled,
+  focusAssistLightingEnabled,
   onFocusedTargetIdChange,
 }: SolarSceneCanvasProps) {
   return (
@@ -581,6 +603,7 @@ export function SolarSceneCanvas({
         solarIrradiance={solarIrradiance}
         focusedTargetId={focusedTargetId}
         trackingEnabled={trackingEnabled}
+        focusAssistLightingEnabled={focusAssistLightingEnabled}
         onFocusedTargetIdChange={onFocusedTargetIdChange}
       />
     </Canvas>
