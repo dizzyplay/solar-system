@@ -280,7 +280,8 @@ export function getJupiterPlanetConfig(texture: THREE.Texture): PlanetConfig {
 
 export function getSaturnPlanetConfig(
   surfaceTexture: THREE.Texture,
-  ringTexture: THREE.Texture,
+  ringColorTexture: THREE.Texture,
+  ringAlphaTexture: THREE.Texture,
 ): PlanetConfig {
   return {
     axialTiltZ: SATURN_AXIAL_TILT,
@@ -309,13 +310,17 @@ export function getSaturnPlanetConfig(
         outerRadiusScale: 2.62,
         tiltX: Math.PI / 2,
         material: {
-          map: ringTexture,
-          color: "#f0dfc5",
+          map: ringColorTexture,
+          alphaMap: ringAlphaTexture,
+          color: "#fff8eb",
           transparent: true,
-          opacity: 0.78,
+          opacity: 0.96,
           depthWrite: false,
           side: THREE.DoubleSide,
-          shininess: 1,
+          emissive: "#7d6f54",
+          emissiveIntensity: 0.18,
+          specular: "#3a352d",
+          shininess: 0.4,
         },
       },
       {
@@ -323,13 +328,17 @@ export function getSaturnPlanetConfig(
         outerRadiusScale: 1.38,
         tiltX: Math.PI / 2,
         material: {
-          map: ringTexture,
-          color: "#c5ad87",
+          map: ringColorTexture,
+          alphaMap: ringAlphaTexture,
+          color: "#d5c1a3",
           transparent: true,
-          opacity: 0.22,
+          opacity: 0.42,
           depthWrite: false,
           side: THREE.DoubleSide,
-          shininess: 1,
+          emissive: "#594d3f",
+          emissiveIntensity: 0.08,
+          specular: "#2b2621",
+          shininess: 0.2,
         },
       },
     ],
@@ -653,7 +662,8 @@ type SolarSystemPlanetTextures = {
   tethys: THREE.Texture;
   enceladus: THREE.Texture;
   mimas: THREE.Texture;
-  saturnRing: THREE.Texture;
+  saturnRingAlpha: THREE.Texture;
+  saturnRingColor: THREE.Texture;
 };
 
 export function getSolarSystemPlanetDefinitions(
@@ -718,7 +728,11 @@ export function getSolarSystemPlanetDefinitions(
     },
     {
       id: "saturn",
-      config: getSaturnPlanetConfig(textures.saturn, textures.saturnRing),
+      config: getSaturnPlanetConfig(
+        textures.saturn,
+        textures.saturnRingColor,
+        textures.saturnRingAlpha,
+      ),
       orbitLine: {
         color: 0xd8c69f,
         dashSize: 0.5,

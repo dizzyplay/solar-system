@@ -2,10 +2,13 @@ import * as THREE from "three";
 
 export type PlanetMaterialOptions = {
   map?: THREE.Texture;
+  alphaMap?: THREE.Texture;
   normalMap?: THREE.Texture;
   normalScale?: THREE.Vector2 | number;
   specularMap?: THREE.Texture;
   specular?: THREE.ColorRepresentation;
+  emissive?: THREE.ColorRepresentation;
+  emissiveIntensity?: number;
   shininess?: number;
   bumpMap?: THREE.Texture;
   bumpScale?: number;
@@ -57,6 +60,7 @@ export type PlanetEntity = PlanetMeshParts & {
   bodyGroup: THREE.Group;
   orbitCenter?: THREE.Group;
   orbitPlane?: THREE.Group;
+  ringMeshes: Array<THREE.Mesh<THREE.RingGeometry, THREE.MeshPhongMaterial>>;
   update: (delta: number) => void;
   dispose: () => void;
 };
@@ -112,11 +116,20 @@ function createPhongMaterial(options: PlanetMaterialRuntimeOptions) {
   if (options.normalMap !== undefined) {
     params.normalMap = options.normalMap;
   }
+  if (options.alphaMap !== undefined) {
+    params.alphaMap = options.alphaMap;
+  }
   if (options.specularMap !== undefined) {
     params.specularMap = options.specularMap;
   }
   if (options.specular !== undefined) {
     params.specular = new THREE.Color(options.specular);
+  }
+  if (options.emissive !== undefined) {
+    params.emissive = new THREE.Color(options.emissive);
+  }
+  if (options.emissiveIntensity !== undefined) {
+    params.emissiveIntensity = options.emissiveIntensity;
   }
   if (options.shininess !== undefined) {
     params.shininess = options.shininess;
@@ -156,6 +169,27 @@ function createPhongMaterial(options: PlanetMaterialRuntimeOptions) {
   }
 
   return material;
+}
+
+function createRingGeometry(innerRadius: number, outerRadius: number) {
+  const geometry = new THREE.RingGeometry(innerRadius, outerRadius, 256, 1);
+  const positions = geometry.attributes.position;
+  const uvs = geometry.attributes.uv;
+  const radiusSpan = Math.max(outerRadius - innerRadius, 1e-6);
+
+  for (let i = 0; i < positions.count; i += 1) {
+    const x = positions.getX(i);
+    const y = positions.getY(i);
+    const radius = Math.hypot(x, y);
+    const radialT = THREE.MathUtils.clamp(
+      (radius - innerRadius) / radiusSpan,
+      0,
+      1,
+    );
+    uvs.setXY(i, radialT, 0.5);
+  }
+
+  return geometry;
 }
 
 export function createPlanetMesh(options: PlanetMeshOptions): PlanetMeshParts {
@@ -220,6 +254,7 @@ export function createPlanetEntity(
   const layerParts: PlanetMeshParts[] = [];
   const layerSpeeds: number[] = [];
   const ringParts: Array<{
+    mesh: THREE.Mesh<THREE.RingGeometry, THREE.MeshPhongMaterial>;
     geometry: THREE.RingGeometry;
     material: THREE.MeshPhongMaterial;
   }> = [];
@@ -256,10 +291,9 @@ export function createPlanetEntity(
 
   if (config.rings) {
     for (const ringConfig of config.rings) {
-      const geometry = new THREE.RingGeometry(
+      const geometry = createRingGeometry(
         config.mesh.radius * ringConfig.innerRadiusScale,
         config.mesh.radius * ringConfig.outerRadiusScale,
-        160,
       );
       const material = createPhongMaterial({
         ...ringConfig.material,
@@ -272,7 +306,7 @@ export function createPlanetEntity(
       const ringMesh = new THREE.Mesh(geometry, material);
       ringMesh.rotation.x = ringConfig.tiltX ?? Math.PI / 2;
       bodyGroup.add(ringMesh);
-      ringParts.push({ geometry, material });
+      ringParts.push({ mesh: ringMesh, geometry, material });
     }
   }
 
@@ -378,6 +412,7 @@ export function createPlanetEntity(
     bodyGroup,
     orbitCenter,
     orbitPlane,
+    ringMeshes: ringParts.map((ring) => ring.mesh),
     update,
     dispose,
   };

@@ -16,12 +16,14 @@ import {
   TEXTURES,
 } from "./constants";
 import { createAsteroidBelt } from "./effects/asteroidBelt";
+import { createSaturnRingLod } from "./effects/saturnRingLod";
 import { createStarField } from "./effects/starField";
 import { createPlanetSystem } from "./entities/planetSystem";
 import { getSolarSystemPlanetDefinitions } from "./entities/solarSystemPlanets";
 import type { FocusTargetId } from "./focusTargets";
 import { createSolarLighting, createSunVisual } from "./entities/sun";
 import { createFocusController } from "./interaction/focusController";
+import { createSaturnRingColorTexture } from "./saturnRingTextures";
 import { createSunHaloTexture } from "./sunTextures";
 
 type SolarSceneCanvasProps = {
@@ -57,7 +59,8 @@ type SceneTextures = {
   tethysTexture: THREE.Texture;
   enceladusTexture: THREE.Texture;
   mimasTexture: THREE.Texture;
-  saturnRingTexture: THREE.Texture;
+  saturnRingAlphaTexture: THREE.Texture;
+  saturnRingColorTexture: THREE.Texture;
   sunTexture: THREE.Texture;
   sunHaloTexture: THREE.Texture;
 };
@@ -67,6 +70,7 @@ type SceneRuntime = {
   sunVisual: ReturnType<typeof createSunVisual>;
   starField: ReturnType<typeof createStarField>;
   asteroidBelt: ReturnType<typeof createAsteroidBelt>;
+  saturnRingLod: ReturnType<typeof createSaturnRingLod>;
   focusController: ReturnType<typeof createFocusController>;
 };
 
@@ -103,7 +107,7 @@ function configureTextures(
     sceneTextures.tethysTexture,
     sceneTextures.enceladusTexture,
     sceneTextures.mimasTexture,
-    sceneTextures.saturnRingTexture,
+    sceneTextures.saturnRingColorTexture,
   ];
   for (const texture of colorTextures) {
     texture.colorSpace = THREE.SRGBColorSpace;
@@ -166,7 +170,8 @@ function configureTextures(
     sceneTextures.tethysTexture,
     sceneTextures.enceladusTexture,
     sceneTextures.mimasTexture,
-    sceneTextures.saturnRingTexture,
+    sceneTextures.saturnRingAlphaTexture,
+    sceneTextures.saturnRingColorTexture,
     sceneTextures.sunTexture,
     sceneTextures.sunHaloTexture,
   ];
@@ -304,7 +309,7 @@ function SolarSceneContent({
         tethysTexture,
         enceladusTexture,
         mimasTexture,
-        saturnRingTexture,
+        saturnRingAlphaTexture,
         sunTexture,
       ] = await Promise.all([
         textureLoader.loadAsync(TEXTURES.earthDay),
@@ -360,7 +365,8 @@ function SolarSceneContent({
         tethysTexture,
         enceladusTexture,
         mimasTexture,
-        saturnRingTexture,
+        saturnRingAlphaTexture,
+        saturnRingColorTexture: createSaturnRingColorTexture(),
         sunTexture,
         sunHaloTexture: createSunHaloTexture(),
       };
@@ -400,7 +406,8 @@ function SolarSceneContent({
           tethys: sceneTextures.tethysTexture,
           enceladus: sceneTextures.enceladusTexture,
           mimas: sceneTextures.mimasTexture,
-          saturnRing: sceneTextures.saturnRingTexture,
+          saturnRingAlpha: sceneTextures.saturnRingAlphaTexture,
+          saturnRingColor: sceneTextures.saturnRingColorTexture,
         }),
       );
 
@@ -409,6 +416,12 @@ function SolarSceneContent({
         disposeTextures(allTextures);
         planetSystem.dispose();
         throw new Error("Earth entity was not created");
+      }
+      const saturnEntity = planetSystem.entities.get("saturn");
+      if (!saturnEntity) {
+        disposeTextures(allTextures);
+        planetSystem.dispose();
+        throw new Error("Saturn entity was not created");
       }
 
       const sunVisual = createSunVisual(scene, {
@@ -426,6 +439,11 @@ function SolarSceneContent({
         innerAu: ASTEROID_BELT_INNER_AU,
         outerAu: ASTEROID_BELT_OUTER_AU,
         tiltX: ASTEROID_BELT_TILT_X,
+      });
+      const saturnRingLod = createSaturnRingLod({
+        bodyGroup: saturnEntity.bodyGroup,
+        mesh: saturnEntity.mesh,
+        ringMeshes: saturnEntity.ringMeshes,
       });
       const focusController = createFocusController({
         camera,
@@ -460,6 +478,7 @@ function SolarSceneContent({
         sunVisual,
         starField,
         asteroidBelt,
+        saturnRingLod,
         focusController,
       };
 
@@ -475,6 +494,7 @@ function SolarSceneContent({
         focusIdByTargetRef.current.clear();
         animationTimeRef.current = 0;
         focusController.dispose();
+        saturnRingLod.dispose();
         planetSystem.dispose();
         starField.dispose();
         asteroidBelt.dispose();
@@ -512,6 +532,7 @@ function SolarSceneContent({
     runtime.planetSystem.update(scaledDelta);
     runtime.starField.update(camera.position, scaledDelta);
     runtime.asteroidBelt.update(scaledDelta);
+    runtime.saturnRingLod.update(camera.position, scaledDelta);
     runtime.sunVisual.update(scaledDelta, animationTimeRef.current);
     runtime.focusController.update();
   });
