@@ -9,7 +9,8 @@ import {
   ASTEROID_BELT_PARTICLE_COUNT,
   ASTEROID_BELT_TILT_X,
   EARTH_ORBIT_LOCAL_OFFSET,
-  SUN_DISTANCE,
+  SOLAR_SYSTEM_CAMERA_FAR,
+  SOLAR_SYSTEM_OUTER_RADIUS,
   SUN_POSITION,
   SUN_RADIUS,
   TEXTURES,
@@ -175,6 +176,17 @@ function configureTextures(
   }
 }
 
+function getFovFitDistance(camera: THREE.PerspectiveCamera, radius: number) {
+  if (radius <= 0) {
+    return 0;
+  }
+  const verticalHalfFov = THREE.MathUtils.degToRad(camera.fov) * 0.5;
+  const horizontalHalfFov = Math.atan(Math.tan(verticalHalfFov) * camera.aspect);
+  const limitingHalfFov = Math.max(0.01, Math.min(verticalHalfFov, horizontalHalfFov));
+  const baseDistance = radius / Math.sin(limitingHalfFov);
+  return baseDistance * 1.12;
+}
+
 function SolarSceneContent({
   timeScale,
   solarIrradiance,
@@ -235,8 +247,17 @@ function SolarSceneContent({
       MIDDLE: THREE.MOUSE.DOLLY,
       RIGHT: THREE.MOUSE.ROTATE,
     };
+    const solarSystemOverviewDistance = getFovFitDistance(
+      camera,
+      SOLAR_SYSTEM_OUTER_RADIUS * 1.08,
+    );
     controls.minDistance = 0.35;
-    controls.maxDistance = Math.max(1320, SUN_DISTANCE * 3.2);
+    controls.maxDistance = Math.max(1320, solarSystemOverviewDistance);
+    camera.far = Math.max(
+      SOLAR_SYSTEM_CAMERA_FAR,
+      controls.maxDistance + SOLAR_SYSTEM_OUTER_RADIUS * 1.4,
+    );
+    camera.updateProjectionMatrix();
     controls.target.set(0, 0, 0);
     controls.update();
   }, [camera, controls]);
@@ -519,7 +540,12 @@ export function SolarSceneCanvas({
 }: SolarSceneCanvasProps) {
   return (
     <Canvas
-      camera={{ fov: 45, near: 0.1, far: 600, position: [0, 0.25, 13] }}
+      camera={{
+        fov: 45,
+        near: 0.1,
+        far: SOLAR_SYSTEM_CAMERA_FAR,
+        position: [0, 0.25, 13],
+      }}
       gl={{ antialias: true, alpha: true }}
       dpr={[1, 2]}
       onCreated={({ gl }) => {
