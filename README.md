@@ -1,7 +1,4 @@
-# Tauri + React + Typescript
+<img width="1239" height="595" alt="image" src="https://github.com/user-attachments/assets/33158aca-889f-4d1e-b930-e6536cf977aa" />
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+### Solar system simulator
 
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
