@@ -1,0 +1,55 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="80" x2="900" y2="944" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#081225"/>
+      <stop offset="0.5" stop-color="#10274A"/>
+      <stop offset="1" stop-color="#040A14"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(398 608) rotate(90) scale(332)">
+      <stop stop-color="#FFF4A8"/>
+      <stop offset="0.38" stop-color="#FFC857"/>
+      <stop offset="0.72" stop-color="#FF8E3C" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#FF8E3C" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sunCore" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(398 608) rotate(90) scale(124)">
+      <stop stop-color="#FFF9D9"/>
+      <stop offset="0.55" stop-color="#FFD463"/>
+      <stop offset="1" stop-color="#FF9438"/>
+    </radialGradient>
+    <radialGradient id="planet" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(692 332) rotate(135) scale(88)">
+      <stop stop-color="#D7FBFF"/>
+      <stop offset="0.45" stop-color="#7FD6FF"/>
+      <stop offset="1" stop-color="#2669B9"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="230" y1="770" x2="784" y2="288" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#91C8FF" stop-opacity="0.18"/>
+      <stop offset="0.5" stop-color="#E7F4FF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#91C8FF" stop-opacity="0.18"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="72" y="72" width="880" height="880" rx="224" fill="url(#bg)"/>
+
+  <circle cx="234" cy="244" r="5" fill="#D7EBFF" opacity="0.95"/>
+  <circle cx="308" cy="180" r="3" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="796" cy="206" r="6" fill="#C4E1FF" opacity="0.8"/>
+  <circle cx="840" cy="308" r="4" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="198" cy="730" r="4" fill="#D7EBFF" opacity="0.65"/>
+  <circle cx="780" cy="756" r="5" fill="#D7EBFF" opacity="0.8"/>
+  <circle cx="704" cy="840" r="3" fill="#FFFFFF" opacity="0.7"/>
+
+  <circle cx="398" cy="608" r="332" fill="url(#sunGlow)"/>
+
+  <path d="M243 737C334 809 470 838 592 805C697 777 785 706 836 608" stroke="url(#ring)" stroke-width="26" stroke-linecap="round"/>
+  <path d="M204 683C166 585 167 476 219 382C286 261 406 183 541 171C666 161 785 207 868 295" stroke="url(#ring)" stroke-width="22" stroke-linecap="round" opacity="0.9"/>
+
+  <circle cx="398" cy="608" r="124" fill="url(#sunCore)"/>
+  <circle cx="398" cy="608" r="84" fill="#FFF6BE" opacity="0.32"/>
+
+  <circle cx="692" cy="332" r="68" fill="url(#planet)"/>
+  <path d="M616 343C642 314 686 296 731 295C764 294 793 303 816 319" stroke="#DBF5FF" stroke-opacity="0.85" stroke-width="18" stroke-linecap="round"/>
+  <path d="M613 361C646 387 696 401 746 398C776 396 804 388 826 375" stroke="#5EA9FF" stroke-opacity="0.55" stroke-width="12" stroke-linecap="round"/>
+
+  <circle cx="768" cy="582" r="24" fill="#FF9E57"/>
+  <circle cx="768" cy="582" r="38" fill="#FF9E57" opacity="0.15"/>
+</svg>
