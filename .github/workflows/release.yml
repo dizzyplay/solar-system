@@ -42,8 +42,6 @@ jobs:
           shopt -s nullglob
           files=(
             src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/macos/*.app.tar.gz
-            src-tauri/target/release/bundle/macos/*.sig
           )
 
           if [ ${#files[@]} -eq 0 ]; then
